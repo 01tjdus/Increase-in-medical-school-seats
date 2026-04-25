@@ -1,0 +1,18 @@
+.claude/
+
+__pycache__/
+*.py[cod]
+*.pyo
+
+.ipynb_checkpoints/
+
+# Generated datasets and heavy intermediate artifacts
+data/
+*.pkl
+
+# Large local analysis outputs
+outputs/pipeline/analysis_df_with_tokens.csv
+outputs/pipeline/analysis_df_with_tokens.pkl
+
+# Packaged notebook exports
+notebooks/*.zip

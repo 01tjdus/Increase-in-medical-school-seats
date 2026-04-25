@@ -1,20 +1,3 @@
-﻿경쟁
-경제
-과학
-복귀
-부족
-상위
-수업
-시작
-영어
-의견
-점수
-정치
-진료
-최저
-탐구
-필수
-학번
-해결
-확대
-휴학
+# 섹션 4 전용 불용어. 고착어 후보: outputs/pipeline/sticky_keyword_candidates_section4.csv
+필요
+가능

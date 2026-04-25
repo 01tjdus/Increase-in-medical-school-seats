@@ -1,35 +1,35 @@
+# 의대증원 중간 프로젝트 — 폴더 구조 및 작업 개요
+
+이 문서는 **네이버 카페 크롤링**부터 **blog 데이터 통합**, **분기(section)별 불용어·TF-IDF 파이프라인**까지의 흐름과, 정리된 디렉터리 구조를 설명합니다.
+
+---
+
 ## 디렉터리 구조
 
-```text
+```
 의대증원_중간프로젝트/
-├── PROJECT_STRUCTURE.md
-├── project_paths.py
-├── requirements_pipeline.txt
+├── PROJECT_STRUCTURE.md      # 본 문서
+├── project_paths.py          # ROOT, DATA_CAFE_ONLY, DATA_INTEGRATED, CONFIG_STOPWORDS, OUTPUTS_PIPELINE
+├── requirements_pipeline.txt # 분기 파이프라인용 Python 패키지 목록
 ├── code/
-│   ├── stopword_utils.py
-│   ├── 의대증원_카페크롤링_v2.py
-│   ├── culumn_name_same.py
-│   ├── preprocess_for_jupyter.py
-│   └── naver_crawler.py
+│   ├── stopword_utils.py     # 불용어 필터, TF-IDF 헬퍼, 로컬 사전 적용
+│   └── 의대증원_카페크롤링_v2.py  # Playwright 기반 카페 크롤러 (JSON 저장)
 ├── notebooks/
-│   ├── cafedata_preprocess.ipynb
-│   ├── cafedata_total_estate_press.ipynb
-│   ├── make_stopwords.ipynb
-│   ├── preprocess_after_project.ipynb
-│   └── section_tfidf_stopwords_pipeline.ipynb
-├── config/
-│   └── stopwords/
-│       ├── stopwords-ko.txt
-│       ├── stopwords_common.txt
-│       ├── stopwords_local_section1.txt
-│       ├── stopwords_local_section2.txt
-│       ├── stopwords_local_section3.txt
-│       └── stopwords_local_section4.txt
+│   ├── cafedata_ preprocess.ipynb            # 카페 JSON → 전처리 CSV (`data/cafe_only/`)
+│   ├── cafedata_total_estate_press.ipynb   # Kiwi 명사·불용어(ko) → cafe_only PKL
+│   ├── make_stopwords.ipynb                # 통합 CSV 정리 → `data/integrated/` PKL
+│   └── section_tfidf_stopwords_pipeline.ipynb  # 분기별 Global/Local TF-IDF·시각화
+├── config/stopwords/
+│   ├── stopwords-ko.txt
+│   ├── stopwords_common.txt
+│   └── stopwords_local_section1.txt ~ section4.txt
 ├── data/
-│   ├── blog_only/
-│   └── integrated/
+│   ├── cafe_only/            # 카페 전용 크롤·전처리·PKL
+│   ├── integrated/           # blog 반영 후 통합 CSV/PKL
+│   └── blog_only/            # (선택) 블로그 전용 — 원격 저장소 구조와 호환
 └── outputs/
     └── pipeline/
+        ├── *.csv, *.png      # TF-IDF wide·고착어·워드클라우드 등 (루트에 두는 산출물)
         ├── datasets/
         ├── kmeans/
         ├── lda/
@@ -40,52 +40,73 @@
             └── raw/
 ```
 
-## 메모
+경로 상수는 [`project_paths.py`](project_paths.py)에서 `Path` 객체로 정의됩니다. 노트북은 작업 디렉터리가 `notebooks/`이거나 프로젝트 루트여도 동작하도록 `Path.cwd()`로 루트를 추정한 뒤 `project_paths`를 import합니다.
 
-- `project_paths.py`에서 `Path` 상수, `code/` 부트스트랩 함수, 출력 폴더 생성 함수를 제공합니다.
-- `notebooks/preprocess_after_project.ipynb`는 전처리 이후 분석을 4구간 기준으로 순서대로 실행하는 메인 노트북입니다.
-- `notebooks/section_tfidf_stopwords_pipeline.ipynb`는 기존 분석 노트북을 구조에 맞춘 위치로 연결한 파일입니다.
-- `cafedata_preprocess.ipynb`, `cafedata_total_estate_press.ipynb`, `make_stopwords.ipynb`는 현재 플레이스홀더입니다.
-- `config/stopwords/stopwords_local_section*.txt`는 현재 계산된 구간별 자동 불용어에서 생성했습니다.
-- `outputs/pipeline/` 아래 결과물은 유형별 하위 폴더로 나누어 저장합니다.
-- 기존 루트 파일 일부는 호환성과 안전한 전환을 위해 남아 있을 수 있습니다.
+- `project_paths.py`에서 `Path` 상수, `code/` 부트스트랩(`bootstrap_code_path`), 출력 폴더 생성(`ensure_output_dirs`)을 제공합니다.
+- `notebooks/section_tfidf_stopwords_pipeline.ipynb`가 분기별 불용어·TF-IDF·시각화 파이프라인의 메인 노트북입니다.
+- `notebooks/cafedata_ preprocess.ipynb`, `cafedata_total_estate_press.ipynb`, `make_stopwords.ipynb`는 카페·통합 전처리 흐름용입니다.
+- `config/stopwords/stopwords_local_section*.txt`는 섹션별 로컬 불용어(고착어 CSV 등을 참고해 보강)입니다.
+- `outputs/pipeline/`에는 새 파이프라인 산출물(CSV·PNG)이 루트에 두어지고, kmeans/lda 등 기존 산출물은 하위 폴더에 보관될 수 있습니다.
 
-## 4구간 분석 흐름
+## 데이터 흐름 (카페 → 통합 → 분기 파이프라인)
 
-`notebooks/preprocess_after_project.ipynb`에서는 아래 순서로 분석을 진행합니다.
+### 1) 카페 전용: 크롤링 (`code/의대증원_카페크롤링_v2.py`)
 
-1. 전처리된 파일 불러오기
-   - 입력 파일: `data/integrated/combined_section_sorted_flat_comments.pkl`
-   - 기준 컬럼: `section` 1~4구간, `title_token_noun`, `document_token_noun`, `comment_token_noun`
-2. 불용어 처리 전 워드클라우드
-   - 전체 1장이 아니라 `section`별 4개 워드클라우드를 생성합니다.
-3. 불용어 적용
-   - 불용어 파일: `config/stopwords/analysis_stopwords_excluded.txt`
-   - 적용 컬럼: `full_nouns_filtered`
-4. 불용어 처리 후 워드클라우드
-   - 전체 1장이 아니라 `section`별 4개 워드클라우드를 생성합니다.
-5. TF-IDF
-   - 문서 단위 전체 평균이 아니라 `section_df` 기준 4구간 비교용 TF-IDF를 계산합니다.
-6. K-means
-   - 전체 문서를 한 번에 군집화하지 않고, 각 구간 안의 개별 문서들에 대해 따로 수행합니다.
-7. LDA 토픽 모델링
-   - 전체 문서를 한 번에 토픽 모델링하지 않고, 각 구간 안의 개별 문서들에 대해 따로 수행합니다.
+- 네이버 카페 검색 URL을 날짜 역순으로 순회하며 게시글·댓글 등을 수집합니다.
+- 결과는 **`data/cafe_only/의대증원_카페_v2.json`**에 누적 저장됩니다 (`Path` 기준 프로젝트 루트).
 
-## 분석 기준 정리
+### 2) 카페 전용: 전처리 (`notebooks/cafedata_ preprocess.ipynb`)
 
-- 워드클라우드: `section`별 4개
-- TF-IDF: `section_df` 기준 4구간 비교
-- K-means: 각 구간 안에서 따로
-- LDA: 각 구간 안에서 따로
+- 위 JSON을 읽어 DataFrame으로 정리합니다.
+- 산출: **`data/cafe_only/의대증원_cafedata_preprocess.csv`**
 
-## K-means의 K 결정 기준
+### 3) 카페 전용: 형태소·1차 불용어 (`notebooks/cafedata_total_estate_press.ipynb`)
 
-- 엘보우 기법은 전체 문서 한 번이 아니라 `section`별 문서 집합에 대해 각각 수행합니다.
-- 입력 행렬은 각 구간의 `doc_text_filtered`를 TF-IDF로 벡터화한 결과를 사용합니다.
-- 탐색 범위는 보통 `K=2 ~ K=8`로 두고, 문서 수나 단어 수가 부족하면 가능한 최대 범위까지만 계산합니다.
-- 선택 기준은 다음과 같습니다.
-  - `K`가 증가할수록 SSE는 항상 감소하므로, 단순히 SSE가 가장 작은 값을 고르지 않습니다.
-  - SSE 감소폭이 급격하다가 완만해지는 첫 번째 꺾이는 지점을 우선 후보로 봅니다.
-  - 해석 가능성과 구간 간 비교 가능성을 위해, 필요 이상으로 큰 `K`는 피합니다.
-- 현재 데이터에서는 대부분의 구간에서 `K=2 -> 3`으로 갈 때 SSE 감소폭이 가장 크고, 그 이후부터는 감소폭이 비교적 완만해집니다.
-- 따라서 본 프로젝트의 기본 분석에서는 `K=3`을 공통 기준으로 사용하고, 필요할 경우 해석이 부족한 구간에 한해 `K=4`를 보조 비교값으로 검토합니다.
+- 전처리 CSV 로드 후 Kiwi로 명사 추출, `config/stopwords/stopwords-ko.txt`로 제거.
+- 산출 예: **`data/cafe_only/의대증원_cafedata_total_estate_press.pkl`**, POS 제거 버전 **`..._drop_list_pos.pkl`**
+
+### 4) 통합: blog `ch` 데이터 합친 뒤 (`notebooks/make_stopwords.ipynb`)
+
+- 협업자 쪽과 합친 **`data/integrated/combined_section_sorted.csv`**를 읽어 토큰 컬럼 등을 정리합니다.
+- 산출: **`data/integrated/crolling_total_estate_press.pkl`** (블로그+카페 등 통합 분석용)
+
+### 5) 분기별 파이프라인 (`notebooks/section_tfidf_stopwords_pipeline.ipynb` + `code/stopword_utils.py`)
+
+- 입력: **`data/integrated/crolling_total_estate_press.pkl`**
+- 레이어: `*_raw` → 공통 불용어 `*_clean` → 섹션별 로컬 `*_final` / `nouns_final`
+- 사전: `config/stopwords/stopwords_common.txt` + `stopwords-ko.txt`, 섹션별 `stopwords_local_section{n}.txt`
+- 산출 CSV·PNG: **`outputs/pipeline/`**
+- 최종 PKL: **`data/integrated/crolling_total_estate_press_layered.pkl`**
+
+---
+
+## `section_tfidf_stopwords_pipeline.ipynb`와 `code/stopword_utils.py`의 차이
+
+| 구분 | `stopword_utils.py` | `section_tfidf_stopwords_pipeline.ipynb` |
+|------|---------------------|---------------------------------------------|
+| **성격** | 재사용 가능한 **함수 모듈**(라이브러리) | **한 번에 끝까지 도는 분석 시나리오**(스크립트에 가까움) |
+| **하는 일** | “어떻게”만 정의: 불용어 필터, raw→clean, TF-IDF 행렬·점수, 로컬 사전 적용 등 | “언제 무엇을” 실행: PKL 읽기 → 단계별로 위 함수 호출 → CSV/PNG/PKL 저장 |
+| **입·출력** | DataFrame·문자열 리스트 등을 **인자로 받아 처리** (파일 저장은 하지 않음) | `project_paths`로 경로를 잡고 `data/integrated/*.pkl` 입출력, `outputs/pipeline/`에 CSV·그림 저장 |
+| **시각화** | 없음 | matplotlib / seaborn / (선택) wordcloud |
+
+**관계:** 노트북이 `from stopword_utils import ...`로 유틸을 불러와 각 셀에서 **연결**합니다. 알고리즘·지표 정의를 바꿀 때는 **`stopword_utils.py`**, 어떤 파일을 읽고 저장할지·셀 순서·그래프만 바꿀 때는 **노트북**을 수정하면 됩니다.
+
+---
+
+## 실행 시 유의사항
+
+- 노트북은 **`notebooks/`에서 열고 실행**하거나, 프로젝트 루트에서 실행해도 됩니다. 첫 셀에서 `PROJECT_ROOT`를 보정합니다.
+- 파이프라인 패키지: `pip install -r requirements_pipeline.txt`
+- 크롤러: Playwright 등 별도 환경이 필요할 수 있습니다.
+
+---
+
+## 파일 역할 요약표
+
+| 위치 | 역할 |
+|------|------|
+| `data/cafe_only/*` | 카페 단독 크롤·전처리·카페 단독 PKL |
+| `data/integrated/*` | 통합 CSV/PKL (blog 반영 후) |
+| `config/stopwords/*` | 불용어 사전 (공통·한국어·섹션 로컬) |
+| `outputs/pipeline/*` | TF-IDF·빈도·시각화 산출물 |
+| `code/stopword_utils.py` | 재사용 가능한 정제·TF-IDF 함수 |

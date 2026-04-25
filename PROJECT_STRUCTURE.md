@@ -30,15 +30,24 @@
 │   └── integrated/
 └── outputs/
     └── pipeline/
+        ├── datasets/
+        ├── kmeans/
+        ├── lda/
+        ├── stopwords/
+        ├── tfidf/
+        └── wordcloud/
+            ├── filtered/
+            └── raw/
 ```
 
 ## 메모
 
-- `project_paths.py`에서 `Path` 상수와 경로 부트스트랩 함수를 제공합니다.
+- `project_paths.py`에서 `Path` 상수, `code/` 부트스트랩 함수, 출력 폴더 생성 함수를 제공합니다.
 - `notebooks/preprocess_after_project.ipynb`는 전처리 이후 분석을 4구간 기준으로 순서대로 실행하는 메인 노트북입니다.
 - `notebooks/section_tfidf_stopwords_pipeline.ipynb`는 기존 분석 노트북을 구조에 맞춘 위치로 연결한 파일입니다.
 - `cafedata_preprocess.ipynb`, `cafedata_total_estate_press.ipynb`, `make_stopwords.ipynb`는 현재 플레이스홀더입니다.
 - `config/stopwords/stopwords_local_section*.txt`는 현재 계산된 구간별 자동 불용어에서 생성했습니다.
+- `outputs/pipeline/` 아래 결과물은 유형별 하위 폴더로 나누어 저장합니다.
 - 기존 루트 파일 일부는 호환성과 안전한 전환을 위해 남아 있을 수 있습니다.
 
 ## 4구간 분석 흐름

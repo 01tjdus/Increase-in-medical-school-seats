@@ -1,14 +1,13 @@
-### 이서연
+"""네이버 블로그 '의대 증원' 게시글 수집 스크립트.
 
-# 전체 흐름:
-# 1. 검색 결과에서 기간별 블로그 글 링크를 충분히 수집합니다.
-# 2. 링크 체크포인트 CSV를 남겨 중간에 끊겨도 이어서 실행할 수 있게 합니다.
-# 3. 각 글의 제목, 본문, 본문 좋아요 수, 댓글 수, 댓글 내용, 댓글 작성일,
-#    댓글 좋아요 수를 추출합니다.
-# 4. 최종 결과를 분석용 CSV로 저장합니다.
-#
-# 네이 버 화면 구조는 수시로 바뀔 수 있으므로 CSS 선택자는 여러 후보를 함께 둡니다.
-# 대량 수집은 실패 링크가 생길 수 있어 target-count보다 더 많은 링크를 먼저 모읍니다.
+검색 결과에서 기간별 블로그 글 링크를 먼저 모은 뒤, 각 글의 제목, 본문,
+게시글 좋아요 수, 댓글 수, 댓글 내용, 댓글 작성일, 댓글 좋아요 수를
+추출해 `data/blog_only/naver_blog_medical_quota.csv`로 저장한다.
+
+네이버 화면 구조는 수시로 바뀔 수 있으므로 CSS 선택자는 여러 후보를
+함께 두고, 링크 체크포인트 CSV를 남겨 중간에 끊겨도 이어서 실행할 수
+있도록 구성했다.
+"""
 import argparse
 import html as html_lib
 import json
@@ -48,6 +47,7 @@ PERIODS = [
 
 
 def _repo_root() -> Path:
+    """현재 파일 위치에서 프로젝트 루트(project_paths.py가 있는 폴더)를 찾는다."""
     here = Path(__file__).resolve()
     for d in [here, *here.parents]:
         if (d / "project_paths.py").is_file():
@@ -149,8 +149,8 @@ def has_complete_comment_meta(record, max_comments_per_post=50):
         return False
 
     post_like = parse_int(getter("post_like_count", ""), default=None)
-    legacy_like = parse_int(getter("like_count", ""), default=None)
-    if post_like is None and legacy_like is None:
+    saved_like = parse_int(getter("like_count", ""), default=None)
+    if post_like is None and saved_like is None:
         return False
 
     comment_count = parse_int(getter("comment_count", ""), default=0)
@@ -581,7 +581,7 @@ def extract_comment_like_count(comment_box):
     """
     댓글 하나에 달린 공감 수를 추출합니다.
 
-    네이버 댓글은 추천 버튼이 숨겨진 상태로 중복 렌더링되는 경우가 있어,
+    네이버 댓글은 공감 버튼이 숨겨진 상태로 중복 렌더링되는 경우가 있어,
     먼저 화면에 보이는 버튼을 우선하고 없으면 fallback 후보를 사용합니다.
     """
     if not comment_box:

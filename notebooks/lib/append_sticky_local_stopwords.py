@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-고착어 CSV(`sticky_keyword_candidates_section{n}.csv`)에서 sticky_score가
-임계 이상인 단어를 `stopwords_local_section{n}.txt`에 이어 붙입니다.
+구간별 고착어 CSV(`sticky_keyword_candidates_section{n}.csv`)를 읽고,
+sticky_score가 기준값 이상인 단어를 해당 구간 로컬 불용어 사전에 반영합니다.
 
-임계값 변경:
+기준값 변경:
   - 이 파일 상단의 DEFAULT_MIN_STICKY_SCORE 를 바꾸거나
   - 실행 시: python notebooks/lib/append_sticky_local_stopwords.py --min-sticky 40
 """
@@ -15,11 +15,13 @@ from pathlib import Path
 
 import pandas as pd
 
-# 노트북이 아닌 이 스크립트만 열어서 바꾼 뒤 재실행하기 쉽게 상수로 둡니다.
+# 고착어 점수가 이 값 이상이면 워드클라우드에서 반복적으로 크게 보이는 단어로 보고
+# 구간별 로컬 불용어 후보에 포함한다.
 DEFAULT_MIN_STICKY_SCORE = 50.0
 
 
 def _project_root() -> Path:
+    """현재 파일 위치에서 프로젝트 루트(project_paths.py가 있는 폴더)를 찾는다."""
     here = Path(__file__).resolve()
     for d in [here.parent, *here.parents]:
         if (d / "project_paths.py").is_file():
@@ -28,6 +30,7 @@ def _project_root() -> Path:
 
 
 def existing_words_from_txt(path: Path) -> set[str]:
+    """기존 로컬 불용어 파일에 이미 들어 있는 단어를 읽어 중복 추가를 막는다."""
     out: set[str] = set()
     if not path.is_file():
         return out
@@ -40,6 +43,7 @@ def existing_words_from_txt(path: Path) -> set[str]:
 
 
 def sticky_words_at_least(csv_path: Path, min_score: float) -> list[str]:
+    """sticky_score 기준을 넘는 후보 단어를 점수 높은 순서로 반환한다."""
     df = pd.read_csv(csv_path, encoding="utf-8-sig", index_col=0)
     if "sticky_score" not in df.columns:
         raise KeyError(f"sticky_score column missing: {csv_path}")
@@ -84,7 +88,7 @@ def main() -> int:
         if not new_words:
             continue
         block = (
-            f"\n# --- sticky_score>={min_score:g} 자동 추가 (append_sticky_local_stopwords.py) ---\n"
+            f"\n# --- sticky_score>={min_score:g} 기준 반영 단어 ---\n"
             + "\n".join(new_words)
             + "\n"
         )

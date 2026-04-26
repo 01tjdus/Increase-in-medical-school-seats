@@ -1,4 +1,9 @@
-"""분기별 불용어·TF-IDF 파이프라인용 유틸리티."""
+"""분기별 불용어·TF-IDF 분석에서 반복 사용하는 함수 모음.
+
+노트북 안에 동일한 전처리 로직이 흩어지지 않도록, 명사 리스트 정리,
+공통·로컬 불용어 적용, TF-IDF 행렬 생성, 구간별 고착어 후보 산출을
+이 파일에 모아 두었다.
+"""
 from __future__ import annotations
 
 import ast
@@ -66,6 +71,7 @@ def apply_global_clean(
     src_suffix: str = "_raw",
     dst_suffix: str = "_clean",
 ) -> None:
+    """전체 문서에 공통 불용어를 한 번 적용해 *_clean 컬럼을 만든다."""
     for base in ("title_token_noun", "document_token_noun", "comment_token_noun"):
         src, dst = f"{base}{src_suffix}", f"{base}{dst_suffix}"
         if src not in df.columns:
@@ -109,6 +115,7 @@ def parse_comment_list_cell(val) -> list:
 
 
 def safe_int_comment_cnt(val) -> int:
+    """댓글 수처럼 숫자형이어야 하는 값을 안전하게 정수로 변환한다."""
     if val is None or val == "":
         return 0
     if isinstance(val, (int, np.integer)):
@@ -125,6 +132,7 @@ def safe_int_comment_cnt(val) -> int:
 
 
 def load_local_stopwords_for_section(stopwords_dir: Path, section: int) -> Set[str]:
+    """특정 구간(section)에 대응하는 로컬 불용어 파일을 읽는다."""
     return load_stopword_files(stopwords_dir / f"stopwords_local_section{int(section)}.txt")
 
 
@@ -156,6 +164,7 @@ def apply_local_clean(
     bases_f = ("title_token_noun", "document_token_noun", "comment_token_noun")
 
     def _nouns_final_row(row: pd.Series) -> list:
+        """제목·본문·댓글 최종 명사를 하나의 분석용 리스트로 합친다."""
         acc: list[str] = []
         for b in bases_f:
             acc.extend(ensure_token_list(row[f"{b}{dst_suffix}"]))

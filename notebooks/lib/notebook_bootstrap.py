@@ -1,4 +1,9 @@
-"""노트북 첫 셀에서 프로젝트 루트·notebooks/lib 경로를 sys.path에 넣고 ROOT Path를 반환합니다."""
+"""노트북 실행 위치를 프로젝트 루트 기준으로 맞추는 보조 모듈.
+
+Jupyter는 실행 위치가 열어 둔 노트북 폴더에 따라 달라질 수 있다.
+이 함수는 현재 작업 폴더에서 위로 올라가며 `project_paths.py`를 찾고,
+프로젝트 루트와 `notebooks/lib`를 import 경로에 추가한다.
+"""
 from __future__ import annotations
 
 import sys
@@ -15,6 +20,7 @@ def setup_paths() -> Path:
         if (d / "project_paths.py").is_file():
             root = d
             lib = root / "notebooks" / "lib"
+            # 노트북에서 project_paths.py와 공통 유틸을 바로 import하기 위한 경로 설정.
             for p in (str(root), str(lib)):
                 if p not in sys.path:
                     sys.path.insert(0, p)

@@ -1,6 +1,10 @@
-###### 20241983 최혜림 ######
-# 의대증원_카페크롤링.py 복제본 — 본문/댓글 변수 충돌 수정, 글 공감·댓글 공감 분리,
-# 비동기 완료 후 저장, 상세 페이지 DOM(제목·날짜·댓글 구조) 반영
+"""네이버 카페 '의대 증원' 게시글 수집 스크립트.
+
+네이버 검색 결과에서 날짜를 하루 단위로 나누어 카페 글을 찾고, 각 글의
+제목·본문·게시일·공감 수·댓글 정보를 JSON으로 저장한다. 이후
+`notebooks/01_preprocess/cafe_preprocess_pipeline.ipynb`에서 이 JSON을
+표 형태로 바꾸고 형태소 분석을 진행한다.
+"""
 
 from playwright.async_api import async_playwright, expect
 import asyncio
@@ -13,8 +17,8 @@ from pathlib import Path
 
 nest_asyncio.apply()
 
-# 프로젝트 `data/cafe_only/` (blog 통합 전 카페 전용 데이터)
-# 스크립트가 notebooks/00_crolling/ 등 어디에 있어도 루트는 project_paths.py 기준으로 찾습니다.
+# 프로젝트 `data/cafe_only/`에 카페 단독 수집 결과를 저장한다.
+# 스크립트가 어디서 실행되더라도 루트는 project_paths.py 기준으로 찾는다.
 def _project_root() -> Path:
     here = Path(__file__).resolve()
     for d in [here, *here.parents]:
@@ -28,6 +32,7 @@ OUTPUT_JSON = str(_ROOT / "data" / "cafe_only" / "의대증원_카페_v2.json")
 
 
 def get_url(keyword, fromtime, totime):
+    """네이버 카페 검색 URL을 생성한다. 기간은 YYYYMMDD 문자열로 넣는다."""
     return f"https://search.naver.com/search.naver?ssc=tab.cafe.all&query={keyword}&sm=tab_opt&st=rel&nso=so%3Add%2Cp%3Afrom{fromtime}to{totime}"
 
 
@@ -61,6 +66,7 @@ expect.set_options(timeout=TIMEOUT)
 
 
 async def main():
+    """검색 결과를 순회하며 카페 게시글과 댓글 정보를 누적 저장한다."""
     dataset = []
     if os.path.exists(OUTPUT_JSON):
         with open(OUTPUT_JSON, 'r', encoding='utf8') as f:
@@ -77,6 +83,7 @@ async def main():
         tab_sem = asyncio.Semaphore(MAX_PAGE)
         count = 0
 
+        # 최근 날짜에서 과거 날짜로 하루씩 이동하며 검색 누락을 줄인다.
         while True:
             if count >= MAX_ARTICLES:
                 break
@@ -121,6 +128,7 @@ async def main():
                 day_tasks = []
 
                 async def process_article(query_from, query_to, href, title_search):
+                    """검색 결과 한 건을 열어 본문·댓글·공감 수를 추출한다."""
                     async with tab_sem:
                         cafe = await context.new_page()
                         try:

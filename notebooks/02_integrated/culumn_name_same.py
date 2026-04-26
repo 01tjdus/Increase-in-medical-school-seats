@@ -1,3 +1,9 @@
+"""블로그 CSV를 통합 분석용 표준 컬럼으로 맞추는 스크립트.
+
+블로그 수집 결과는 실행 시점이나 협업 파일 형식에 따라 컬럼명이 조금씩
+다를 수 있다. 이 파일은 제목, 본문, 좋아요, 댓글, 채널, 날짜, 구간을
+`PREPARED_COLUMNS` 순서로 정리해 카페 데이터와 병합할 수 있는 형태로 만든다.
+"""
 from __future__ import annotations
 
 import json
@@ -13,13 +19,48 @@ if str(_REPO_ROOT) not in sys.path:
 
 from project_paths import DATA_BLOG_ONLY
 
+# 통합 노트북에서 찾는 순서: 이미 정규화된 파일 → 협업용 최종 → 크롤 원본
+BLOG_CSV_CANDIDATES = (
+    "naver_blog_medical_quota_final_jupyter.csv",
+    "naver_blog_medical_quota_preprocessed.csv",
+    "naver_blog_medical_quota_final.csv",
+    "naver_blog_medical_quota.csv",
+)
+
+
+def resolve_existing_blog_csv() -> Path:
+    """data/blog_only 안에서 실제로 있는 블로그 CSV 하나를 고릅니다."""
+    for name in BLOG_CSV_CANDIDATES:
+        p = DATA_BLOG_ONLY / name
+        if p.is_file():
+            return p
+    raise FileNotFoundError(
+        "data/blog_only/에 블로그 CSV가 없습니다. 다음 중 하나를 두세요: "
+        + ", ".join(BLOG_CSV_CANDIDATES)
+    )
+
+
+def _default_input_csv() -> Path:
+    """save_prepared_csv / prepare_dataframe 기본 입력. 협업용 final → 전처리본 → 크롤 원본 순."""
+    for name in (
+        "naver_blog_medical_quota_final.csv",
+        "naver_blog_medical_quota_preprocessed.csv",
+        "naver_blog_medical_quota.csv",
+    ):
+        p = DATA_BLOG_ONLY / name
+        if p.is_file():
+            return p
+    return DATA_BLOG_ONLY / "naver_blog_medical_quota_final.csv"
+
+
 # 크롤 산출 CSV가 없으면 크롤 후 이 경로에 두거나, 인자로 경로를 넘깁니다.
-INPUT_CSV = DATA_BLOG_ONLY / "naver_blog_medical_quota_final.csv"
+INPUT_CSV = _default_input_csv()
 OUTPUT_CSV = DATA_BLOG_ONLY / "naver_blog_medical_quota_final_jupyter.csv"
 PREPARED_COLUMNS = ["title", "doc", "like", "comment_cnt", "comment_list", "ch", "date", "section"]
 
 
 def read_csv_with_fallback(csv_path: str | Path) -> pd.DataFrame:
+    """UTF-8과 국내 CSV에서 자주 쓰이는 인코딩을 차례로 시도해 파일을 읽는다."""
     encodings = ["utf-8-sig", "utf-8", "cp949", "euc-kr"]
     last_error = None
 
@@ -35,6 +76,7 @@ def read_csv_with_fallback(csv_path: str | Path) -> pd.DataFrame:
 
 
 def to_int(value, default: int = 0) -> int:
+    """쉼표, 공백, 단위 문자가 섞인 숫자 문자열을 정수로 바꾼다."""
     if pd.isna(value):
         return default
     text = str(value).strip()
@@ -51,6 +93,7 @@ def to_int(value, default: int = 0) -> int:
 
 
 def normalize_date(value) -> str:
+    """여러 날짜 표기를 YYYY-MM-DD 문자열로 통일한다."""
     if pd.isna(value):
         return ""
 
@@ -68,6 +111,7 @@ def normalize_date(value) -> str:
 
 
 def normalize_section(value, date_value="") -> int:
+    """명시된 section이 없을 때 날짜를 기준으로 1~4구간을 부여한다."""
     section = to_int(value, default=0)
     if section in {1, 2, 3, 4}:
         return section
@@ -88,10 +132,12 @@ def normalize_section(value, date_value="") -> int:
 
 
 def is_prepared_dataframe(df: pd.DataFrame) -> bool:
+    """이미 통합용 표준 컬럼을 갖춘 파일인지 확인한다."""
     return set(PREPARED_COLUMNS).issubset(df.columns)
 
 
 def normalize_prepared_dataframe(raw: pd.DataFrame) -> pd.DataFrame:
+    """표준 컬럼 파일을 다시 읽을 때 타입과 댓글 JSON만 정리한다."""
     prepared = raw.copy()
 
     for column in ["title", "doc", "ch", "date"]:
@@ -133,6 +179,7 @@ def normalize_prepared_dataframe(raw: pd.DataFrame) -> pd.DataFrame:
 
 
 def map_channel(source) -> str:
+    """원본 source 값을 blog/cafe 등 분석용 채널명으로 단순화한다."""
     if pd.isna(source):
         return ""
 
@@ -145,6 +192,7 @@ def map_channel(source) -> str:
 
 
 def build_comment_list(row: pd.Series) -> list[dict]:
+    """분리 저장된 댓글 텍스트·날짜·좋아요를 list[dict] 구조로 묶는다."""
     comments = []
     raw_json = row.get("comments_json", "")
 
@@ -181,6 +229,7 @@ def build_comment_list(row: pd.Series) -> list[dict]:
 
 
 def prepare_dataframe(csv_path: str | Path = INPUT_CSV) -> pd.DataFrame:
+    """원본 또는 표준화된 블로그 CSV를 통합 분석용 DataFrame으로 변환한다."""
     raw = read_csv_with_fallback(csv_path)
 
     if is_prepared_dataframe(raw):
@@ -221,6 +270,7 @@ def save_prepared_csv(
     input_csv: str | Path = INPUT_CSV,
     output_csv: str | Path = OUTPUT_CSV,
 ) -> pd.DataFrame:
+    """정리된 블로그 표를 CSV로 저장하고, 메모리에서는 댓글 리스트 구조를 유지한다."""
     prepared = prepare_dataframe(input_csv)
     output_frame = prepared.copy()
     output_frame["comment_list"] = output_frame["comment_list"].apply(

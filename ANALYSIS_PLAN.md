@@ -28,7 +28,7 @@
 | 항목           | 값                                           |
 | ------------ | ------------------------------------------- |
 | 분석 문서 수      | 8,972건                                      |
-| 원본 파일        | `combined_section_sorted_flat_comments.pkl` |
+| 원본 파일        | `combined_section_sorted.csv` 및 통합 분석용 `crolling_total_estate_press.pkl` |
 | 형태소 분석기      | kiwipiepy (명사 추출)                           |
 | 불용어 수        | 221개 (`analysis_stopwords_excluded.txt`)    |
 | 불용어 제거 후 상위어 | 치료·미래·투자·주장·발생·간호사·시스템·아이·현장·최고             |
@@ -40,20 +40,20 @@
 
 > **현재 단계: 불용어 처리까지 완료**
 
-> 아래는 **현재 저장소 기준** 경로입니다. (과거: 루트에 두던 크롤 스크립트, `blog_cafe.ipynb` 등 — `notebooks/00_crolling/` 등으로 정리됨)
+> 아래는 **현재 저장소 기준** 경로입니다.
 
 ```
 [완료] 카페 크롤링      →  notebooks/00_crolling/cafe_crolling.py → data/cafe_only/의대증원_카페_v2.json
 [완료] 블로그 크롤링(선택) → notebooks/00_crolling/blog_crolling.py → data/blog_only/naver_blog_medical_quota.csv (및 links CSV)
 [완료] 카페 전처리·명사 →  notebooks/01_preprocess/cafe_preprocess_pipeline.ipynb
-[완료] flat PKL 전처리(선택) → notebooks/01_preprocess/blog_flat_preprocess.ipynb
+[완료] flat 입력 전처리(선택) → notebooks/01_preprocess/blog_flat_preprocess.ipynb
 [완료] 통합 PKL       →  notebooks/02_integrated/integrated_pipeline.ipynb → data/integrated/crolling_total_estate_press.pkl
 [완료] 공통·로컬 불용어·워드클라우드·TF-IDF·KMeans·LDA·구간 분포 → notebooks/03_analysis/section_analysis_pipeline.ipynb
                           · notebooks/lib/stopword_utils.py (함수 모듈)
                           · 산출: outputs/pipeline/* 하위 폴더, data/integrated/crolling_total_estate_press_layered.pkl
-[통합] test.ipynb의 §5~8(해석·반응지표·보조 히트맵) → notebooks/03_analysis/section_analysis_pipeline.ipynb Step 7
-[진행중] K-Means·LDA (계획서 §3 방식) → outputs/pipeline/kmeans/, lda/ 산출물과 노트북 연동 정리
-[ 예정 ] 감성 분석     →  감성 분류 + 시계열 변화 해석
+[완료] 해석·반응지표·보조 히트맵 → notebooks/03_analysis/section_analysis_pipeline.ipynb Step 7
+[완료] K-Means·LDA (계획서 §3 방식, 전체 학습 후 구간 집계) → outputs/pipeline/kmeans/, lda/ (CSV·PNG, §5.3 LDA 별칭 파일명 포함)
+[완료] 감성(참고) → notebooks/03_analysis/section_analysis_pipeline.ipynb Step 8: 경량 사전 기반 구간 스칼라, outputs/pipeline/sentiment/
 ```
 
 ---
@@ -197,27 +197,27 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 토픽 1 = topic_0
 대표어: 재생, 마음, 엄마, 부모, 친구, 경험, 직업, 생활, 고민
 해석: 일상/경험/부모-자녀 서사형
-메모: 의대 증원 핵심 담론이라기보다 잡음이나 주변 생활형 문서가 섞인 느낌이 큽니다.
+해석: 의대 증원 핵심 담론과 직접 연결되기보다는 생활·경험형 게시글이 함께 섞인 토픽으로 판단된다.
 
 토픽 2 = topic_1
 대표어: 재수, 점수, 학습, 설명회, 국어, 약대, 학종, 연세대, 원서
 해석: 입시/학습/학부모 관심형
-메모: 의대 증원이 입시에 미치는 영향 쪽 담론으로 보입니다.
+해석: 의대 증원이 입시 전략과 학부모 관심에 미치는 영향을 보여주는 담론으로 판단된다.
 
 토픽 3 = topic_2
 대표어: 사직, 위원회, 단체, 현장, 제출, 기관, 복귀, 응급, 대책, 갈등
 해석: 전공의 사직/복귀/의료현장 갈등형
-메모: 이게 가장 전형적인 의대 증원 본류 담론 중 하나예요.
+해석: 전공의 사직과 의료 현장 갈등을 다루는 핵심 담론으로 판단된다.
 
 토픽 4 = topic_3
 대표어: 수가, 지지, 주장, 민주당, 정권, 선거, 인구, 전문의, 민영, 시스템
 해석: 정치/정책/수가 논쟁형
-메모: 정책 책임, 정치 프레임, 의료제도 논쟁이 섞인 토픽으로 보입니다.
+해석: 정책 책임, 정치적 프레임, 의료제도 논쟁이 함께 나타나는 토픽으로 판단된다.
 
 토픽 5 = topic_4
 대표어: 반도체, 투자, 중국, 금리, 사업, 국내, 주식, 기술, 전망, 부동산
 해석: 경제/투자/산업 잡음형
-메모: 이건 의대 증원과 직접 관련 없는 문서가 꽤 섞였다는 신호로 보입니다.
+해석: 경제·투자 관련 문서가 일부 섞였음을 보여주는 토픽으로, 해석 시 직접 관련성이 낮은 잡음 가능성을 함께 고려한다.
 
 3. 모든 단어 → 5개 토픽 중 하나 무작위 초기 할당
 
@@ -302,7 +302,8 @@ sns.heatmap(pivot.T, annot=True, fmt='.2f', cmap='YlOrRd')
 ```python
 # 예시: 군집별 좋아요 수 박스플롯
 sns.boxplot(data=doc_df, x='cluster_id', y='like',
-            order=[0, 1, 2], palette='Set2')
+            order=[0, 1, 2], hue='cluster_id',
+            palette='Set2', legend=False)
 plt.ylim(0, doc_df['like'].quantile(0.99))
 ```
 
@@ -339,23 +340,18 @@ plt.ylim(0, doc_df['like'].quantile(0.99))
 
 ## 8. 분석 노트북 실행 순서
 
-```
-notebooks/
-└── section_analysis_pipeline.ipynb  ← 메인 분석 노트북 (03_analysis/)
-    │
-    ├── [완료] Cell 7-8   : 데이터 로딩 (pkl)
-    ├── [완료] Cell 9-10  : 명사 준비 (doc + comment 합산)
-    ├── [완료] Cell 11-14 : Raw 워드클라우드 + 빈도 분석
-    ├── [완료] Cell 15    : 불용어 221개 로딩
-    ├── [완료] Cell 16-17 : 불용어 적용 + 필터링
-    ├── [완료] Cell 18-19 : 필터링 후 워드클라우드
-    ├── [완료] Cell 20-22 : TF-IDF 구간별 분석
-    ├── [진행중] Cell 23-27 : K-Means (k=3, 전체 학습 → 구간별 집계)
-    ├── [진행중] Cell 28-30 : LDA (5 topics, 전체 학습 → 구간별 집계)
-    ├── [예정]  Cell 31-33 : 구간별 비율 변화 시각화 (스택 막대 / 선 그래프)
-    ├── [예정]  Cell 34-36 : 히트맵 (토픽×구간, 군집×구간, TF-IDF×구간)
-    └── [예정]  Cell 37-39 : 박스플롯 (군집·구간별 좋아요·댓글 분포)
-```
+메인 분석은 **`notebooks/03_analysis/section_analysis_pipeline.ipynb`** 한 파일에서 순서대로 실행합니다. (과거 Cell 번호 체계는 폐기)
+
+| 단계 | 내용 |
+| --- | --- |
+| Step 0 | 통합 PKL 로드·명사 컬럼 검증 |
+| Step 1~2 | 글로벌 불용어·로컬 불용어·`nouns_final` |
+| Step 3 | 로컬 불용어 적용·`nouns_final` 확정 |
+| Step 4 | 빈도, 워드클라우드(2×2 + **구간×필터 8장**), TF-IDF 히트맵(`tfidf_heatmap_union_top.png`) |
+| Step 5 | layered PKL 저장 |
+| Step 6a~6c | KMeans·LDA 전체 학습, 구간 비율 **스택 막대·선·히트맵 PNG**, CSV(계획서 §5.3 LDA 별칭 포함) |
+| Step 7 | 군집·토픽 키워드·라벨, 박스플롯 PNG, TF-IDF 보조 히트맵 PNG |
+| Step 8 | 경량 감성(사전)·구간별 CSV·PNG (`outputs/pipeline/sentiment/`) |
 
 ---
 
@@ -381,12 +377,12 @@ LDA_TOP_WORDS = 15                # 토픽당 키워드 수
 
 | 분석        | 출력물                              | 해석 포인트               |
 | --------- | -------------------------------- | -------------------- |
-| TF-IDF    | `tfidf_top_terms_by_section.csv` | 구간별 핵심 키워드 변화        |
-| K-Means   | 군집 키워드 CSV + 구간별 비율 변화 그래프       | 3가지 여론 유형의 시계열 소장 추적 |
-| LDA       | 토픽 키워드 CSV + 구간별 비율 변화 그래프       | 5가지 잠재 담론의 부상·소멸 추적  |
-| 워드클라우드    | 8장 PNG (구간×필터 조합)                | 시각적 키워드 트렌드          |
-| 히트맵       | 토픽×구간, 군집×구간, TF-IDF×구간 PNG      | 담론 지형 변화 한눈에 파악      |
-| 박스플롯      | 군집·구간별 좋아요·댓글 분포 PNG             | 담론 유형별 여론 반응 특성 비교   |
-| (예정) 감성분석 | 감성 레이블 + 시계열 그래프                 | 긍정/부정 여론 추이          |
+| TF-IDF    | `tfidf_top_terms_by_section.csv`, `tfidf_heatmap_union_top.png`, `tfidf_heatmap_keyword_section_top20.png` | 구간별 핵심 키워드 변화        |
+| K-Means   | `kmeans_cluster_top_terms.csv`, `kmeans_doc_assignments.csv`, `kmeans_section_distribution.csv`, `kmeans_elbow.csv`, `kmeans_elbow.png`, `kmeans_section_stacked_and_heatmap.png`, `kmeans_section_ratio_lines.png`, `kmeans_cluster_section_heatmap.png` | 3가지 여론 유형의 시계열 소장 추적 |
+| LDA       | `lda_topic_top_terms.csv`, `lda_topic_keywords.csv`(별칭), `lda_doc_assignments.csv`, `lda_doc_topic_distribution.csv`(별칭), `lda_section_distribution.csv`, `lda_section_stacked_and_heatmap.png`, `lda_section_ratio_lines.png`, `lda_topic_section_heatmap.png` | 5가지 잠재 담론의 부상·소멸 추적  |
+| 워드클라우드    | `wordcloud_by_section.png` + `wordcloud/raw/wordcloud_raw_section_{1~4}.png` + `wordcloud/filtered/wordcloud_filtered_section_{1~4}.png` | 시각적 키워드 트렌드          |
+| 히트맵       | KMeans·LDA·TF-IDF 보조 히트맵 위 경로 및 Step 4 통합 히트맵 | 담론 지형 변화 한눈에 파악      |
+| 박스플롯      | `kmeans/boxplot_cluster_topic_like_comment.png`, `kmeans/boxplot_section_like_comment.png` | 담론 유형별 여론 반응 특성 비교   |
+| 감성(참고)   | `sentiment/sentiment_lexicon_by_section.csv`, `sentiment_lexicon_by_section.png` | 사전 기반 구간 스칼라(정밀 분류는 별도 모델 권장) |
 
 

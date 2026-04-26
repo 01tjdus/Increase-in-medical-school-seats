@@ -41,7 +41,6 @@ flowchart LR
 │   ├── 01_preprocess/          # 카페·블로그 전처리·형태소(카페 PKL 등)
 │   ├── 02_integrated/            # 블로그 반영 후 통합 PKL 생성
 │   ├── 03_analysis/              # 메인: 불용어·워드클라우드·TF-IDF·모델·layered PKL
-│   └── 04_models_legacy/         # (비어 있음·로컬 체크포인트만 있을 수 있음)
 ├── config/stopwords/
 ├── data/
 │   ├── cafe_only/README.md
@@ -59,10 +58,10 @@ flowchart LR
 | [notebooks/00_crolling/cafe_crolling.py](notebooks/00_crolling/cafe_crolling.py) | 네이버 **카페** 크롤 → `data/cafe_only/의대증원_카페_v2.json` (루트는 `project_paths.py` 기준 자동 탐지) |
 | [notebooks/00_crolling/blog_crolling.py](notebooks/00_crolling/blog_crolling.py) | 네이버 **블로그** 크롤 → 기본 `data/blog_only/*.csv` (`--output`으로 변경 가능) |
 | [notebooks/01_preprocess/cafe_preprocess_pipeline.ipynb](notebooks/01_preprocess/cafe_preprocess_pipeline.ipynb) | **카페 통합**: JSON → 전처리 CSV → Kiwi 명사·불용어 → 카페 PKL |
-| [notebooks/01_preprocess/blog_flat_preprocess.ipynb](notebooks/01_preprocess/blog_flat_preprocess.ipynb) | `combined_section_sorted_flat_comments.pkl` 기준 **flat 입력** 전처리(TF-IDF 이전) |
+| [notebooks/01_preprocess/blog_flat_preprocess.ipynb](notebooks/01_preprocess/blog_flat_preprocess.ipynb) | `data/integrated/` 안에서 사용 가능한 통합 CSV 또는 PKL을 자동 선택해 **flat 입력** 전처리(TF-IDF 이전) |
 | [notebooks/02_integrated/integrated_pipeline.ipynb](notebooks/02_integrated/integrated_pipeline.ipynb) | **통합 전처리**: 블로그 컬럼 정합 → 카페+블로그 병합·형태소 → 통합 PKL |
 | [notebooks/02_integrated/culumn_name_same.py](notebooks/02_integrated/culumn_name_same.py) | 블로그 CSV 컬럼 정규화 스크립트 |
-| [notebooks/03_analysis/section_analysis_pipeline.ipynb](notebooks/03_analysis/section_analysis_pipeline.ipynb) | **통합 분석**: 불용어·워드클라우드·TF-IDF·Step6(KMeans/LDA) (`crolling_total_estate_press.pkl` 기준) |
+| [notebooks/03_analysis/section_analysis_pipeline.ipynb](notebooks/03_analysis/section_analysis_pipeline.ipynb) | **메인 통합 분석**: 불용어·워드클라우드·TF-IDF·KMeans·LDA·반응 지표·경량 감성 지표 |
 
 **실행 방법:** Jupyter 작업 디렉터리가 프로젝트 루트이든 `notebooks/…` 하위든 상관없습니다. 각 노트북 첫 설정 셀에서 `notebook_bootstrap.setup_paths()`로 루트를 찾습니다.
 
@@ -80,7 +79,7 @@ flowchart LR
 | `data/integrated/` | CSV | `combined_section_sorted.csv` | 블로그+카페 통합 표 | 협업 제공 + `integrated_pipeline.ipynb` 보정 | `integrated_pipeline.ipynb` |
 | `data/integrated/` | PKL | `crolling_total_estate_press.pkl` | 통합 분석용 메인 PKL | `integrated_pipeline.ipynb` | `03_analysis/section_analysis_pipeline.ipynb` |
 | `data/integrated/` | PKL | `crolling_total_estate_press_layered.pkl` | 불용어 레이어 적용 후 | `section_analysis_pipeline.ipynb` | 보고·추가 모델링 |
-| `data/integrated/` | PKL | `combined_section_sorted_flat_comments.pkl` | (있을 경우) 레거시 실험 입력 | 과거 전처리 | `01_preprocess/blog_flat_preprocess.ipynb` |
+| `data/integrated/` | CSV/PKL | `combined_section_sorted.csv` 또는 `combined_section_sorted_flat_comments.pkl` | flat 전처리용 입력 후보 | 통합 전처리 또는 제공 파일 | `01_preprocess/blog_flat_preprocess.ipynb` |
 
 폴더별 요약: [data/cafe_only/README.md](data/cafe_only/README.md), [data/integrated/README.md](data/integrated/README.md), [data/blog_only/README.md](data/blog_only/README.md).
 
@@ -97,27 +96,27 @@ flowchart LR
 | 경로 | 용도 | 주로 연결되는 노트북 |
 |------|------|----------------------|
 | `tfidf/` | TF-IDF wide CSV, 고착어·고유어 후보 CSV, 히트맵 PNG 등 | `03_analysis/section_analysis_pipeline.ipynb` |
-| `wordcloud/` | 구간별 워드클라우드 PNG(`wordcloud_by_section.png` 등) | 동일 |
+| `wordcloud/` | 구간별 워드클라우드 PNG와 원본·불용어 처리 후 비교 이미지 | 동일 |
 | `kmeans/` | 군집 할당·엘보·구간 분포 CSV | `section_analysis_pipeline.ipynb` Step 6 |
 | `lda/` | 토픽 키워드·문서 토픽 분포 등 | 동일 |
-| `wordcloud/raw/`, `wordcloud/filtered/` | (레거시) 불용어 전·후 세부 산출 | 과거 실험 노트북 |
+| `wordcloud/raw/`, `wordcloud/filtered/` | 불용어 전·후 구간별 워드클라우드와 상위 단어표 | `section_analysis_pipeline.ipynb` |
 | `datasets/` | 토큰 확장 중간 테이블(용량 큼, .gitignore 대상일 수 있음) | (선택) 로컬 실험 시 수동 생성 |
 
 상세: [outputs/pipeline/README.md](outputs/pipeline/README.md).
 
 ---
 
-## 통합 노트북 `section_analysis_pipeline.ipynb` (구 `section_tfidf_*` + 레거시 일부)
+## 통합 노트북 `section_analysis_pipeline.ipynb`
 
 | 항목 | 현재 메인 (`03_analysis/section_analysis_pipeline.ipynb`) |
 |------|-----------------------------------------------------------|
 | 입력 PKL | `data/integrated/crolling_total_estate_press.pkl` |
-| 코드 구조 | [notebooks/lib/stopword_utils.py](notebooks/lib/stopword_utils.py) + Step 0~5 + **Step 6a~6c** (KMeans/LDA, `nouns_final` 기반) |
+| 코드 구조 | [notebooks/lib/stopword_utils.py](notebooks/lib/stopword_utils.py) + Step 0~8 (전처리, TF-IDF, KMeans/LDA, 반응 지표, 감성 참고 지표) |
 | 불용어 | `config/stopwords/` + `stopword_utils` 단일 경로 |
 | TF-IDF | 전 코퍼스 한 번 `fit` 후 섹션별 평균 TF-IDF wide |
-| 산출 | `outputs/pipeline/tfidf/`, `wordcloud/`, `kmeans/`, `lda/`, `data/integrated/*_layered.pkl` |
+| 산출 | `outputs/pipeline/tfidf/`, `wordcloud/`, `kmeans/`, `lda/`, `sentiment/`, `data/integrated/*_layered.pkl` |
 
-**flat PKL:** `combined_section_sorted_flat_comments.pkl` 기준 전처리는 [`01_preprocess/blog_flat_preprocess.ipynb`](notebooks/01_preprocess/blog_flat_preprocess.ipynb)에서 하며, 메인 PKL(`crolling_total_estate_press.pkl`)과 **수치·정의가 다를 수 있습니다.**
+**flat 입력:** [`01_preprocess/blog_flat_preprocess.ipynb`](notebooks/01_preprocess/blog_flat_preprocess.ipynb)는 `combined_section_sorted_flat_comments.pkl`이 있으면 우선 사용하고, 없으면 `combined_section_sorted.csv`를 읽어 전처리를 진행합니다. 메인 PKL(`crolling_total_estate_press.pkl`)과 **수치·정의가 다를 수 있습니다.**
 
 ---
 

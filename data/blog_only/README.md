@@ -4,10 +4,12 @@
 
 | 파일명 | 의미 | 생성 | 다음 단계 |
 |--------|------|------|-----------|
-| `naver_blog_medical_quota.csv` | 검색·기간별로 모은 블로그 글 본문·댓글 등 | [`notebooks/00_crolling/naver_crawler.py`](../../notebooks/00_crolling/naver_crawler.py) (기본 출력) | 협업 파이프라인에서 `combined_section_sorted.csv` 등과 합쳐 `data/integrated/`로 |
-| `naver_blog_medical_quota_links.csv` | 수집 링크 체크포인트 | `naver_crawler.py` | 크롤 재시작 시 이어 받기 |
+| `naver_blog_medical_quota.csv` | 검색·기간별로 모은 블로그 글 본문·댓글 등 | [`notebooks/00_crolling/blog_crolling.py`](../../notebooks/00_crolling/blog_crolling.py) (기본 출력) | 협업 파이프라인에서 `combined_section_sorted.csv` 등과 합쳐 `data/integrated/`로 |
+| `naver_blog_medical_quota_links.csv` | 수집 링크 체크포인트 | `blog_crolling.py` | 크롤 재시작 시 이어 받기 |
+| `naver_blog_medical_quota_final.csv` | (협업/후처리) 최종 블로그 CSV | 외부 전달 또는 후처리 | [`notebooks/02_integrated/culumn_name_same.py`](../../notebooks/02_integrated/culumn_name_same.py) → `naver_blog_medical_quota_final_jupyter.csv` |
+| `naver_blog_medical_quota_final_jupyter.csv` | 컬럼명·댓글 리스트 정규화 결과 | `culumn_name_same.py` | [`notebooks/02_integrated/integrated_pipeline.ipynb`](../../notebooks/02_integrated/integrated_pipeline.ipynb) |
 
-`naver_crawler.py`는 `--output`, `--links-output`으로 경로를 바꿀 수 있습니다. 기본값은 **항상 이 폴더**(저장소 루트 기준)입니다.
+`blog_crolling.py`는 `--output`, `--links-output`으로 경로를 바꿀 수 있습니다. 기본값은 **항상 이 폴더**(저장소 루트 기준)입니다.
 
 - 협업자가 블로그 CSV만 넘겨준 경우: 파일명을 정리해 두고 위 표에 한 줄 추가하면 됩니다.
 - 카페만 쓰는 경우: 이 폴더는 비워 두고 [`data/cafe_only/`](../cafe_only/README.md)와 [`data/integrated/`](../integrated/README.md)만 사용합니다.

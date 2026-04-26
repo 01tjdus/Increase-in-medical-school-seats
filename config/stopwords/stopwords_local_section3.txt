@@ -2,7 +2,7 @@
 필요
 가능
 
-# --- sticky_score>=50 자동 추가 (append_sticky_local_stopwords.py) ---
+# --- sticky_score>=50 자동 추가 (notebooks/lib/append_sticky_local_stopwords.py) ---
 # 그 중 제거: 기대, 부담, 지속, 판단, 시행, 대응, 확대, 해소, 현상, 비판, 인정, 행복, 변화, 우려, 반데, 적극, 위험, 추진, 전망, 강화, 어려움, 피해, 주장, 목소리, 본격, 전환, 서울, 개선, 제시
 포함
 시작

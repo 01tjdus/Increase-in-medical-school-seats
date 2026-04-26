@@ -3,7 +3,7 @@
 #   워드클라우드에서만 덜 보이게 하고 싶은 단어만 아래에 추가하세요.
 # 예: 이 섹션에서만 노이즈인 단어
 
-# --- sticky_score>=50 자동 추가 (append_sticky_local_stopwords.py) ---
+# --- sticky_score>=50 자동 추가 (notebooks/lib/append_sticky_local_stopwords.py) ---
 # 그 중 제외: 기대, 관심, 장기, 우려, 압박, 부담, 위험, 걱정, 희망, 피해, 미래, 유지, 
 포함
 시작

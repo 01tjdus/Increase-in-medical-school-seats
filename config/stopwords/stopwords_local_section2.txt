@@ -1,7 +1,7 @@
 # 섹션 2 전용 불용어 (한 줄에 하나).
 # 고착어 후보: outputs/pipeline/sticky_keyword_candidates_section2.csv
 
-# --- sticky_score>=50 자동 추가 (append_sticky_local_stopwords.py) ---
+# --- sticky_score>=50 자동 추가 (notebooks/lib/append_sticky_local_stopwords.py) ---
 # 그 중 제외 단어: 기대, 도움, 다양, 관심, 중심, 사실, 유지, 부담, 핵심, 지속, 주목, 적극, 도입, 강화, 우려, 노력, 소통, 본격, 안정, 확대, 유리, 
 # 추진, 서울, 개선, 위험, 장기, 유익
 시작

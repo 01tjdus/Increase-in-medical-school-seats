@@ -36,21 +36,18 @@
 
 > **현재 단계: 불용어 처리까지 완료**
 
+> 아래는 **현재 저장소 기준** 경로입니다. (과거: `naver_crawler.py`, `blog_cafe.ipynb` 등 — 저장소에서 제거됨)
+
 ```
-[완료] 크롤링          →  naver_crawler.py
-[완료] 컬럼 정규화     →  culumn_name_same.py
-[완료] 텍스트 정제     →  preprocess_for_jupyter.py
-                          · HTML/URL/이모지 제거
-                          · ㅋㅋ/ㅎㅎ 처리
-                          · 중복 게시글 제거 (80% 유사도 기준)
-[완료] 형태소 분석     →  blog_cafe.ipynb
-                          · kiwipiepy 명사 추출
-                          · 댓글 병합·평탄화
-[완료] 워드클라우드    →  구간별 Raw / 불용어 제거 후 시각화
-[완료] TF-IDF 분석    →  구간별 핵심 키워드 30개 추출
-[완료] 불용어 처리     →  221개 불용어 최종 적용
-[진행중] K-Means      →  k=3 확정, 전체 학습 → 구간별 분포 집계
-[진행중] LDA          →  전체 학습 5개 토픽 → 구간별 분포 집계
+[완료] 크롤링          →  code/의대증원_카페크롤링_v2.py → data/cafe_only/의대증원_카페_v2.json
+[완료] 카페 전처리·명사 →  notebooks/01_cafe/cafedata_preprocess.ipynb, cafedata_total_estate_press.ipynb
+[완료] 통합 PKL       →  notebooks/02_integrated/make_stopwords.ipynb → data/integrated/crolling_total_estate_press.pkl
+[완료] 공통·로컬 불용어·TF-IDF·시각화 → notebooks/03_tfidf_stopwords/section_tfidf_stopwords_pipeline.ipynb
+                          · code/stopword_utils.py (함수 모듈)
+                          · 산출: outputs/pipeline/*.csv, *.png, data/integrated/crolling_total_estate_press_layered.pkl
+[완료/실험] 워드클라우드·구간 TF-IDF·KMeans·LDA (별도 입력 가능) → notebooks/04_models_legacy/preprocess_after_project.ipynb
+[완료/실험] 전체 학습 KMeans/LDA 후 구간 분포 → notebooks/04_models_legacy/test.ipynb
+[진행중] K-Means·LDA (계획서 §3 방식) → outputs/pipeline/kmeans/, lda/ 산출물과 노트북 연동 정리
 [ 예정 ] 감성 분석     →  감성 분류 + 시계열 변화 해석
 ```
 

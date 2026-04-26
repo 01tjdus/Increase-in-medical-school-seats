@@ -8,8 +8,10 @@ __pycache__/
 
 .ipynb_checkpoints/
 
-# Generated datasets and heavy intermediate artifacts
-data/
+# Generated datasets and heavy intermediate artifacts (README.md under data/ 는 추적)
+data/**/*.pkl
+data/**/*.csv
+data/**/*.json
 *.pkl
 
 # Large local analysis outputs

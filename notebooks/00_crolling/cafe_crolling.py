@@ -14,7 +14,16 @@ from pathlib import Path
 nest_asyncio.apply()
 
 # 프로젝트 `data/cafe_only/` (blog 통합 전 카페 전용 데이터)
-_ROOT = Path(__file__).resolve().parent.parent
+# 스크립트가 notebooks/00_crolling/ 등 어디에 있어도 루트는 project_paths.py 기준으로 찾습니다.
+def _project_root() -> Path:
+    here = Path(__file__).resolve()
+    for d in [here, *here.parents]:
+        if (d / "project_paths.py").is_file():
+            return d
+    raise RuntimeError(f"project_paths.py를 찾지 못했습니다. 시작 경로: {here}")
+
+
+_ROOT = _project_root()
 OUTPUT_JSON = str(_ROOT / "data" / "cafe_only" / "의대증원_카페_v2.json")
 
 

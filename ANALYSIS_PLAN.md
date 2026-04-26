@@ -36,10 +36,11 @@
 
 > **현재 단계: 불용어 처리까지 완료**
 
-> 아래는 **현재 저장소 기준** 경로입니다. (과거: `naver_crawler.py`, `blog_cafe.ipynb` 등 — 저장소에서 제거됨)
+> 아래는 **현재 저장소 기준** 경로입니다. (과거: 루트에 두던 `naver_crawler.py`, `blog_cafe.ipynb` 등 — `notebooks/00_crolling/` 등으로 정리됨)
 
 ```
-[완료] 크롤링          →  code/의대증원_카페크롤링_v2.py → data/cafe_only/의대증원_카페_v2.json
+[완료] 카페 크롤링      →  notebooks/00_crolling/cafe_crolling.py → data/cafe_only/의대증원_카페_v2.json
+[완료] 블로그 크롤링(선택) → notebooks/00_crolling/naver_crawler.py → data/blog_only/naver_blog_medical_quota.csv (및 links CSV)
 [완료] 카페 전처리·명사 →  notebooks/01_cafe/cafedata_preprocess.ipynb, cafedata_total_estate_press.ipynb
 [완료] 통합 PKL       →  notebooks/02_integrated/make_stopwords.ipynb → data/integrated/crolling_total_estate_press.pkl
 [완료] 공통·로컬 불용어·TF-IDF·시각화 → notebooks/03_tfidf_stopwords/section_tfidf_stopwords_pipeline.ipynb

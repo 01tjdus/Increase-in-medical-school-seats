@@ -68,10 +68,10 @@ def main() -> int:
     root = _project_root()
     sys.path.insert(0, str(root))
     sys.path.insert(0, str(root / "notebooks" / "lib"))
-    from project_paths import CONFIG_STOPWORDS, OUTPUTS_PIPELINE_TFIDF
+    from project_paths import OUTPUTS_ANALYSIS_TFIDF, STOPWORDS_DIR
 
-    out_dir = OUTPUTS_PIPELINE_TFIDF
-    stop_dir = CONFIG_STOPWORDS
+    out_dir = OUTPUTS_ANALYSIS_TFIDF
+    stop_dir = STOPWORDS_DIR
 
     for section in (1, 2, 3, 4):
         csv_path = out_dir / f"sticky_keyword_candidates_section{section}.csv"

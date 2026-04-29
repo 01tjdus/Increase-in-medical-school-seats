@@ -2,7 +2,7 @@
 
 네이버 검색 결과에서 날짜를 하루 단위로 나누어 카페 글을 찾고, 각 글의
 제목·본문·게시일·공감 수·댓글 정보를 JSON으로 저장한다. 이후
-`notebooks/01_preprocess/cafe_preprocess_pipeline.ipynb`에서 이 JSON을
+`notebooks/01_preprocess/cafe_preprocess.ipynb`에서 이 JSON을
 표 형태로 바꾸고 형태소 분석을 진행한다.
 """
 

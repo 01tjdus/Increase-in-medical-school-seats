@@ -15,7 +15,7 @@ data/**/*.json
 *.pkl
 
 # Large local analysis outputs
-outputs/pipeline/datasets/
+outputs/analysis/datasets/
 
 # Packaged notebook exports
 notebooks/*.zip

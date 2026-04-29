@@ -1,6 +1,6 @@
-# 의대 증원 여론 분석 프로젝트 - 분석 계획서
+# 의대 증원 온라인 담론 변화 분석 프로젝트 - 분석 계획서
 
-> 크롤링 키워드: `의대 증원` | 플랫폼: 네이버 블로그 + 카페 | 총 문서 수: 8,972건
+> 크롤링 키워드: `의대 증원` | 플랫폼: 네이버 블로그 + 카페 | 최종 통합 문서 수: 9,080건
 
 ---
 
@@ -8,9 +8,37 @@
 
 ### 1.1 분석 목적
 
-2024년 2월 의대 2,000명 증원 공식 발표 이후 형성된 온라인 여론의 **시계열 변화**를 추적한다.
+2024년 2월 의대 2,000명 증원 공식 발표 이후 형성된 온라인 여론의 **시계열 변화**를 추적한다. 단순히 `의대 증원`이라는 키워드가 얼마나 많이 언급되었는지가 아니라, 온라인 공간에서 논의의 중심이 **정책 발표 → 의료현장 갈등 → 대학·입시 전형 → 장기화된 사회 반응**으로 어떻게 이동했는지 확인하는 것이 목적이다.
 
-1.2 분석 구간
+이 프로젝트는 정책 자체의 찬반을 판정하는 작업이 아니다. 네이버 블로그와 카페에 남은 텍스트를 수집해, 특정 공공정책 이슈가 시간이 지나며 어떤 언어와 담론 구조로 재구성되는지 분석한다.
+
+### 1.2 연구 배경과 계기
+
+정부는 2024년 2월 6일 2025학년도 의대 정원을 2,000명 늘려 2035년까지 의사 인력 1만 명을 확충하겠다고 발표했다. 공식 설명의 핵심은 고령화에 따른 의료 수요 증가, 필수의료·지역의료 공백, 의사 인력 부족 문제였다. 그러나 발표 이후 전공의 사직, 의대생 휴학, 의료 공백 우려, 입시 전형 변화가 이어지면서 이슈는 보건의료 정책을 넘어 교육·정치·지역사회 문제로 확장되었다.
+
+따라서 이 주제는 다음 이유에서 분석 대상으로 적절하다.
+
+| 기준 | 선정 근거 |
+| --- | --- |
+| 사회적 파급력 | 의료 접근성, 필수의료, 지역의료, 대입 전형이 동시에 연결된 전국 단위 이슈 |
+| 담론 변화 가능성 | 발표 직후와 장기화 이후의 관심사가 다를 가능성이 높음 |
+| 데이터 적합성 | 블로그는 설명·논평형 글, 카페는 수험생·학부모·이용자 반응이 많아 담론의 층위가 다름 |
+| 분석 확장성 | TF-IDF, WordCloud, KMeans, LDA, NMF, 반응 지표를 함께 적용할 수 있음 |
+
+참고한 공개 자료는 다음과 같다.
+
+- 대한민국 정책브리핑, 2024년 의대 정원 2,000명 증원 발표: <https://www.korea.kr/news/policyNewsView.do?newsId=148925630>
+- 대한민국 정책브리핑, 2027학년도 이후 의대 정원 조정 관련 발표: <https://www.korea.kr/news/policyNewsView.do?newsId=148960790>
+
+### 1.3 분석 질문
+
+1. 의대 증원 관련 온라인 담론은 시간에 따라 어떤 키워드와 주제로 이동했는가?
+2. 의료현장 갈등 담론과 입시·전형 담론은 어느 시기에 강하게 나타났는가?
+3. 블로그와 카페의 통합 말뭉치에서 반복적으로 나타나는 고착어와 실제 구간 특징어는 어떻게 구분되는가?
+4. KMeans, LDA, NMF가 제시하는 담론 유형은 서로 보완적으로 설명되는가?
+5. 좋아요·댓글 수는 어떤 담론 유형에서 더 강한 반응을 보이는가?
+
+### 1.4 분석 구간
 
 
 | 구간  | 기간           | 주요 사건                             |
@@ -21,38 +49,59 @@
 | 4구간 | 2025.01 ~ 06 | 증원 입학생 수업 시작 + 전공의 복귀 여부 + 여론 재점화 |
 
 
-### 1.3 데이터 현황
+### 1.5 데이터 현황
 
 
 | 항목           | 값                                                                        |
 | ------------ | ------------------------------------------------------------------------ |
-| 분석 문서 수      | 8,972건                                                                   |
-| 원본 파일        | `combined_section_sorted.csv` 및 통합 분석용 `crolling_total_estate_press.pkl` |
+| 최종 통합 문서 수      | 9,080건                                                                   |
+| 최종 입력 파일        | `data/integrated/crolling_total_estate_press_layered.pkl` |
 | 형태소 분석기      | kiwipiepy (명사 추출)                                                        |
-| 불용어 수        | 221개 (`analysis_stopwords_excluded.txt`)                                 |
-| 불용어 제거 후 상위어 | 치료·미래·투자·주장·발생·간호사·시스템·아이·현장·최고                                          |
+| 통합 방식 | 블로그·카페의 제목, 본문, 댓글 명사 토큰을 문서 단위로 결합 |
+| 불용어 체계        | `stopwords_common.txt`, `stopwords-ko.txt`, `stopwords_local_section*.txt` |
+| 최종 분석 토큰 | `nouns_final`, `corpus_final` |
+
+### 1.6 기대 효과와 활용방안
+
+이 분석은 의대 증원이라는 특정 이슈에 대한 결과 보고서에 그치지 않고, 공공정책 이슈의 온라인 담론을 빠르게 읽는 재사용 가능한 구조를 제안한다.
+
+| 활용 주체 | 활용 가능성 |
+| --- | --- |
+| 정책 담당자 | 정책 발표 이후 어떤 쟁점이 장기화되는지 조기 파악 |
+| 언론·콘텐츠 제작자 | 시기별 핵심 담론과 대중 반응을 근거로 기사·해설 기획 |
+| 교육·입시 관계자 | 의료정책 이슈가 대입 전형 담론으로 이동하는 시점 파악 |
+| 연구자·학생 | 크롤링, 형태소 분석, 불용어 레이어, 토픽 모델링을 결합한 분석 구조 재사용 |
+
+### 1.7 교수 평가 기준 대응
+
+| 평가 기준 | 본 프로젝트의 대응 |
+| --- | --- |
+| 토픽 선정의 참신성·적절성 | 의료정책, 입시, 지역의료, 정치 담론이 교차하는 의대 증원 이슈를 시계열 온라인 담론으로 분석 |
+| 데이터 수집 및 분석 기술성 | 네이버 블로그·카페 수집, 원천별 전처리, Kiwi 명사 추출, 통합 PKL, 불용어 레이어 구성 |
+| 전처리 과정 | 제목·본문·댓글 토큰 분리 추출, 통합 후 공통/로컬 불용어 적용, 고착어 후보 산출 |
+| 분석 | TF-IDF, WordCloud, KMeans, LDA, NMF, 좋아요·댓글 반응 지표를 결합 |
+| 창의성·확장성 | 전체 말뭉치 단일 학습 후 구간별 비율 비교, 고착어 기반 불용어 보강, 다른 공공정책 이슈로 확장 가능 |
+| 기대 효과·활용방안 | 정책 모니터링, 여론 변화 감지, 미디어 해설, 교육·입시 담론 파악에 활용 |
 
 
 ---
 
 ## 2. 전처리 완료 현황
 
-> **현재 단계: 불용어 처리까지 완료**
+> **현재 단계: 00→01→02→03 실행 흐름 정리 완료**
 
 > 아래는 **현재 저장소 기준** 경로입니다.
 
 ```
 [완료] 카페 크롤링      →  notebooks/00_crolling/cafe_crolling.py → data/cafe_only/의대증원_카페_v2.json
 [완료] 블로그 크롤링(선택) → notebooks/00_crolling/blog_crolling.py → data/blog_only/naver_blog_medical_quota.csv (및 links CSV)
-[완료] 카페 전처리·명사 →  notebooks/01_preprocess/cafe_preprocess_pipeline.ipynb
-[완료] flat 입력 전처리(선택) → notebooks/01_preprocess/blog_flat_preprocess.ipynb
-[완료] 통합 PKL       →  notebooks/02_integrated/integrated_pipeline.ipynb → data/integrated/crolling_total_estate_press.pkl
-[완료] 공통·로컬 불용어·워드클라우드·TF-IDF·KMeans·LDA·구간 분포 → notebooks/03_analysis/section_analysis_pipeline.ipynb
+[완료] 카페 전처리·명사 → notebooks/01_preprocess/cafe_preprocess.ipynb
+[완료] 블로그 전처리·명사 → notebooks/01_preprocess/blog_preprocess.ipynb
+[완료] 통합 PKL·불용어 레이어 생성 → notebooks/02_integrated/integrated_preprocessing.ipynb
                           · notebooks/lib/stopword_utils.py (함수 모듈)
-                          · 산출: outputs/pipeline/* 하위 폴더, data/integrated/crolling_total_estate_press_layered.pkl
-[완료] 해석·반응지표·보조 히트맵 → notebooks/03_analysis/section_analysis_pipeline.ipynb Step 7
-[완료] K-Means·LDA (계획서 §3 방식, 전체 학습 후 구간 집계) → outputs/pipeline/kmeans/, lda/ (CSV·PNG, §5.3 LDA 별칭 파일명 포함)
-[완료] 감성(참고) → notebooks/03_analysis/section_analysis_pipeline.ipynb Step 8: 경량 사전 기반 구간 스칼라, outputs/pipeline/sentiment/
+                          · 산출: data/integrated/crolling_total_estate_press.pkl, crolling_total_estate_press_layered.pkl
+[완료] 워드클라우드·TF-IDF·KMeans·LDA·구간 분포·반응지표 → notebooks/03_analysis/section_analysis.ipynb
+[완료] K-Means·LDA (계획서 §3 방식, 전체 학습 후 구간 집계) → outputs/analysis/kmeans/, lda/ (CSV·PNG, §5.3 LDA 별칭 파일명 포함)
 ```
 
 ---
@@ -61,7 +110,7 @@
 
 ### 3.1 핵심 질문
 
-> K-Means와 LDA를 **4개 구간으로 나눠서** 각각 돌릴 것인가, 아니면 **전체 8,972건을 합쳐서** 한 번 돌릴 것인가?
+> K-Means와 LDA를 **4개 구간으로 나눠서** 각각 돌릴 것인가, 아니면 **전체 9,080건을 합쳐서** 한 번 돌릴 것인가?
 
 ### 3.2 구간별 분리 학습의 문제점
 
@@ -82,10 +131,10 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 
 ### 3.3 전체 합산 후 구간별 집계 방식 (채택)
 
-**전체 8,972건을 하나의 말뭉치로 학습**하면 모든 문서가 동일한 토픽/군집 공간을 공유한다.
+**전체 9,080건을 하나의 말뭉치로 학습**하면 모든 문서가 동일한 토픽/군집 공간을 공유한다.
 
 ```
-[학습] 전체 8,972건 → K-Means / LDA 단일 모델 학습
+[학습] 전체 9,080건 → K-Means / LDA 단일 모델 학습
          ↓
 [할당] 각 문서에 Cluster ID / dominant Topic ID 부여
          ↓
@@ -121,16 +170,16 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 | 군집 수(k)   | **3**                                    |
 | 벡터화       | `TfidfVectorizer(min_df=5, max_df=0.85)` |
 | 초기화       | `n_init=20, random_state=42`             |
-| **분석 단위** | **전체 8,972건 단일 학습** → 구간별 분포 집계          |
+| **분석 단위** | **전체 9,080건 단일 학습** → 구간별 분포 집계          |
 | 특징 수      | 전체 어휘 기준 (64,815개)                       |
 
 
-**k=3 선택 근거**: 엘보우 분석(SSE vs K) 결과, k=3에서 SSE 감소율이 뚜렷이 꺾이는 지점이 확인됨.
+**k=3 선택 근거**: 엘보우 분석(SSE vs K), silhouette score, 군집별 상위 키워드의 해석 가능성을 함께 본다. 단순히 수치가 가장 좋은 지점만 고르지 않고, 발표에서 서로 구분 가능한 담론 유형으로 설명되는지도 함께 확인한다.
 
 ### 4.2 분석 절차
 
 ```
-1. 전체 doc_text_filtered (8,972건) 로딩
+1. 전체 doc_text_filtered (9,080건) 로딩
 2. TF-IDF 행렬 생성 (전체 말뭉치 기준 희귀어·과다등장어 제거)
 3. KMeans(k=3) 단일 학습 → 각 문서에 Cluster ID 할당
 4. 군집 중심(centroid) 기준 상위 15개 키워드 추출 → 담론 유형 레이블링
@@ -143,10 +192,11 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 
 | 파일                                                        | 내용                       |
 | --------------------------------------------------------- | ------------------------ |
-| `outputs/pipeline/kmeans/kmeans_cluster_top_terms.csv`    | 군집별 상위 키워드 + 가중치         |
-| `outputs/pipeline/kmeans/kmeans_doc_assignments.csv`      | 문서별 Cluster ID + section |
-| `outputs/pipeline/kmeans/kmeans_section_distribution.csv` | 구간별 군집 비율 (시계열 추적용)      |
-| `outputs/pipeline/kmeans/kmeans_elbow.csv`                | 엘보우 분석 SSE 수치            |
+| `outputs/analysis/kmeans/kmeans_cluster_top_terms.csv`    | 군집별 상위 키워드 + 가중치         |
+| `outputs/analysis/kmeans/kmeans_doc_assignments.csv`      | 문서별 Cluster ID + section |
+| `outputs/analysis/kmeans/kmeans_section_distribution.csv` | 구간별 군집 비율 (시계열 추적용)      |
+| `outputs/analysis/kmeans/kmeans_elbow.csv`                | 엘보우 분석 SSE 수치            |
+| `outputs/analysis/kmeans/kmeans_model_selection.csv`      | k 후보별 SSE, silhouette score, 최종 선택 여부 |
 
 
 ### 4.4 담론 유형 레이블링 계획
@@ -154,11 +204,11 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 전체 학습 후 3개 군집의 centroid 키워드를 보고 **담론 유형** 레이블을 부여한다.
 
 
-| 레이블 후보    | 대표 키워드 경향                   |
-| --------- | --------------------------- |
-| 의료 현장 우려형 | 붕괴, 현장, 간호사, 근무, 환자, 소아청소년과 |
-| 정책·교육 논쟁형 | 정원, 교육, 입학, 정부, 개혁, 법원      |
-| 사회·경제 파급형 | 투자, 미래, 경쟁, 시스템, 비용, 반도체    |
+| 군집 | 최종 라벨 | 실제 상위 키워드 경향 |
+| --- | --- | --- |
+| Cluster 0 | 정책·사회/교육 혼합형 | 정부, 정원, 대통령, 국민, 대학, 교육, 정책 |
+| Cluster 1 | 의료현장 갈등형 | 정부, 전공의, 환자, 교수, 진료, 파업, 의협, 응급실 |
+| Cluster 2 | 입시·전형 집중형 | 전형, 수능, 입시, 수시, 대학, 지역, 모집, 인재, 등급 |
 
 
 레이블링 후 구간별 비율 변화를 통해 아래를 확인한다:
@@ -179,8 +229,8 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 | 알고리즘      | `LatentDirichletAllocation` (sklearn)      |
 | 토픽 수      | **5개**                                     |
 | 벡터화       | `CountVectorizer(min_df=5, max_df=0.85)`   |
-| 학습 방식     | `learning_method='batch', random_state=42` |
-| **분석 단위** | **전체 8,972건 단일 학습** → 구간별 분포 집계            |
+| 학습 방식     | `learning_method='online', random_state=42` |
+| **분석 단위** | **전체 9,080건 단일 학습** → 구간별 분포 집계            |
 | 키워드 수     | 토픽당 상위 15개                                 |
 
 
@@ -188,39 +238,35 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 
 ```
 1. 문서단어행렬(DTM) 생성
-   - CountVectorizer로 전체 8,972건 벡터화
+   - CountVectorizer로 전체 9,080건 벡터화
    - min_df=5: 5건 미만 등장 어휘 제외
    - max_df=0.85: 85% 이상 문서 등장 어휘 제외 (너무 흔한 단어)
 
-2. 토픽 수 5 사전 설정
-토픽 1 = topic_0
-대표어: 재생, 마음, 엄마, 부모, 친구, 경험, 직업, 생활, 고민
-해석: 일상/경험/부모-자녀 서사형
-해석: 의대 증원 핵심 담론과 직접 연결되기보다는 생활·경험형 게시글이 함께 섞인 토픽으로 판단된다.
+2. 토픽 수 후보 2~8개를 비교
+   - perplexity: 낮을수록 문서 단어 분포를 더 잘 설명
+   - UMass-style coherence: 0에 가까울수록 상위 단어가 함께 등장하는 경향이 강함
+   - 최종 선택은 수치와 상위 키워드 해석 가능성을 함께 고려
 
-토픽 2 = topic_1
-대표어: 재수, 점수, 학습, 설명회, 국어, 약대, 학종, 연세대, 원서
-해석: 입시/학습/학부모 관심형
-해석: 의대 증원이 입시 전략과 학부모 관심에 미치는 영향을 보여주는 담론으로 판단된다.
+3. 토픽 수 5개로 최종 학습
+Topic 0 = 의료현장·진료 차질
+대표어: 환자, 전공의, 의협, 정부, 교수, 진료, 휴진, 치료, 응급실, 복지부
 
-토픽 3 = topic_2
-대표어: 사직, 위원회, 단체, 현장, 제출, 기관, 복귀, 응급, 대책, 갈등
-해석: 전공의 사직/복귀/의료현장 갈등형
-해석: 전공의 사직과 의료 현장 갈등을 다루는 핵심 담론으로 판단된다.
+Topic 1 = 경제·시장 외부담론
+대표어: 미국, 기업, 시장, 한국, 상승, 중국, 투자, 경제, 반도체, 사업
+해석: 의대 증원과 직접 관련성이 낮은 경제·시장 담론이 일부 섞인 토픽으로, 해석 시 잡음 가능성을 함께 명시한다.
 
-토픽 4 = topic_3
-대표어: 수가, 지지, 주장, 민주당, 정권, 선거, 인구, 전문의, 민영, 시스템
-해석: 정치/정책/수가 논쟁형
-해석: 정책 책임, 정치적 프레임, 의료제도 논쟁이 함께 나타나는 토픽으로 판단된다.
+Topic 2 = 정책·의료갈등 종합
+대표어: 정부, 정원, 전공의, 대학, 교수, 국민, 환자, 정책, 필수, 교육
 
-토픽 5 = topic_4
-대표어: 반도체, 투자, 중국, 금리, 사업, 국내, 주식, 기술, 전망, 부동산
-해석: 경제/투자/산업 잡음형
-해석: 경제·투자 관련 문서가 일부 섞였음을 보여주는 토픽으로, 해석 시 직접 관련성이 낮은 잡음 가능성을 함께 고려한다.
+Topic 3 = 정치·선거 담론
+대표어: 대통령, 국민, 윤석열, 정부, 대표, 정치, 의원, 이재명, 민주당, 국회
 
-3. 모든 단어 → 5개 토픽 중 하나 무작위 초기 할당
+Topic 4 = 입시·전형 담론
+대표어: 대학, 전형, 수능, 입시, 학생, 지역, 모집, 수시, 지원, 학년도
 
-4. 반복 최적화 (Batch EM)
+4. 모든 단어 → 5개 토픽 중 하나 무작위 초기 할당
+
+5. 반복 최적화
    - 각 단어 제외 후 재할당:
      - 각 문서 내 토픽 분포 (θ) 계산
      - 각 토픽 내 단어 분포 (φ) 계산
@@ -237,9 +283,9 @@ LDA도 동일하다. 구간마다 따로 학습하면 "구간 1의 Topic 2"와 "
 
 | 파일                                                    | 내용                              |
 | ----------------------------------------------------- | ------------------------------- |
-| `outputs/pipeline/lda/lda_topic_keywords.csv`         | 토픽 ID·순위·키워드·가중치                |
-| `outputs/pipeline/lda/lda_doc_topic_distribution.csv` | 문서별 dominant topic ID + section |
-| `outputs/pipeline/lda/lda_section_distribution.csv`   | 구간별 토픽 비율 (시계열 추적용)             |
+| `outputs/analysis/lda/lda_topic_top_terms.csv`        | 토픽 ID·순위·키워드·가중치                |
+| `outputs/analysis/lda/lda_doc_assignments.csv`        | 문서별 dominant topic ID + section |
+| `outputs/analysis/lda/lda_section_distribution.csv`   | 구간별 토픽 비율 (시계열 추적용)             |
 
 
 ### 5.4 토픽 해석 계획
@@ -319,7 +365,24 @@ plt.ylim(0, doc_df['like'].quantile(0.99))
 
 ---
 
-## 7. LDA vs K-Means 비교 관점
+## 7. 보완 분석: NMF 기반 담론 성분 확인
+
+KMeans와 LDA는 서로 다른 장점이 있지만, 각각 한계도 있다. KMeans는 문서를 하나의 군집으로 강하게 배정하고, LDA는 토픽 수를 사전에 정해야 하며 일부 토픽에 잡음 문서가 섞일 수 있다. 이를 보완하기 위해 03 분석 노트북에는 NMF 기반 보완 분석을 추가한다.
+
+NMF는 TF-IDF 행렬을 음이 아닌 주제 성분으로 분해하므로, LDA처럼 확률적 토픽을 추정하기보다 실제 TF-IDF 가중치에서 드러나는 키워드 묶음을 확인하는 데 적합하다.
+
+| 항목 | 적용 방식 |
+| --- | --- |
+| 입력 | KMeans와 동일한 TF-IDF 행렬 |
+| 성분 수 | LDA와 비교 가능하도록 5개 |
+| 산출 | `nmf_topic_top_terms.csv`, `nmf_doc_assignments.csv`, `nmf_section_distribution.csv` |
+| 해석 | LDA 토픽과 유사한 담론 축이 반복되는지 확인 |
+
+NMF 결과가 LDA와 비슷한 담론 축을 보이면 해당 해석의 안정성이 높다고 볼 수 있다. 반대로 다른 성분이 나타나면, LDA가 놓친 TF-IDF 기반의 강한 키워드 구조가 있음을 의미한다.
+
+---
+
+## 8. LDA vs K-Means 비교 관점
 
 두 분석은 **상호 보완적**으로 해석한다.
 
@@ -337,34 +400,43 @@ plt.ylim(0, doc_df['like'].quantile(0.99))
 
 ---
 
-## 8. 분석 노트북 실행 순서
+## 9. 실행 순서와 분석 노트북
 
-메인 분석은 `**notebooks/03_analysis/section_analysis_pipeline.ipynb`** 한 파일에서 순서대로 실행합니다. (과거 Cell 번호 체계는 폐기)
+발표 기준 실행 순서는 **00 크롤링 → 01 원천별 전처리 → 02 통합 PKL 생성 → 03 메인 분석**입니다.
+이미 수집·전처리된 파일이 있으면 00 단계는 선택 실행입니다.
+
+| 단계 | 기준 파일 | 역할 | 주요 산출 |
+| --- | --- | --- | --- |
+| 00 | `notebooks/00_crolling/` | 카페·블로그 원천 수집 | `data/cafe_only/*.json`, `data/blog_only/*.csv` |
+| 01 | `notebooks/01_preprocess/cafe_preprocess.ipynb`, `blog_preprocess.ipynb` | 원천별 표준화, Kiwi 명사 추출, 원천별 PKL/CSV 생성 | `data/cafe_only/*drop_list_pos.pkl`, `data/blog_only/*preprocessed.*` |
+| 02 | `notebooks/02_integrated/integrated_preprocessing.ipynb` | 블로그·카페 통합, 공통/로컬 불용어 레이어, 고착어 후보 CSV 생성 | `data/integrated/combined_section_sorted.csv`, `crolling_total_estate_press.pkl`, `crolling_total_estate_press_layered.pkl` |
+| 03 | `notebooks/03_analysis/section_analysis.ipynb` | 확정 `layered.pkl` 기준 TF-IDF, WordCloud, KMeans, LDA, 반응 지표 | `outputs/analysis/*` |
+
+메인 분석은 **`notebooks/03_analysis/section_analysis.ipynb`** 한 파일에서 순서대로 실행합니다.
 
 
 | 단계         | 내용                                                                        |
 | ---------- | ------------------------------------------------------------------------- |
-| Step 0     | 통합 PKL 로드·명사 컬럼 검증                                                        |
-| Step 1~2   | 글로벌 불용어·로컬 불용어·`nouns_final`                                              |
-| Step 3     | 로컬 불용어 적용·`nouns_final` 확정                                                |
-| Step 4     | 빈도, 워드클라우드(2×2 + **구간×필터 8장**), TF-IDF 히트맵(`tfidf_heatmap_union_top.png`) |
-| Step 5     | layered PKL 저장                                                            |
-| Step 6a~6c | KMeans·LDA 전체 학습, 구간 비율 **스택 막대·선·히트맵 PNG**, CSV(계획서 §5.3 LDA 별칭 포함)      |
-| Step 7     | 군집·토픽 키워드·라벨, 박스플롯 PNG, TF-IDF 보조 히트맵 PNG                                 |
-| Step 8     | 경량 감성(사전)·구간별 CSV·PNG (`outputs/pipeline/sentiment/`)                     |
+| Step 0     | `layered.pkl` 로드·최종 명사 컬럼 검증                                               |
+| Step 1     | 02 단계에서 확정한 `nouns_final`, `corpus_final` 확인                              |
+| Step 2     | 확정 토큰 기준 섹션별 TF-IDF와 히트맵(`tfidf_heatmap_union_top.png`)                 |
+| Step 3     | 빈도표, 구간별 워드클라우드(`wordcloud_by_section.png`)                            |
+| Step 4a~4c | KMeans·LDA 전체 학습, 모델 선택 지표(silhouette, perplexity, coherence), 구간 비율 그래프 |
+| Step 5     | 군집·토픽 키워드·라벨, 박스플롯 PNG, TF-IDF 보조 히트맵 PNG                          |
+| Step 6     | NMF 기반 보완 토픽 분석과 구간별 담론 성분 비율 확인 |
 
 
 ---
 
-## 9. 설정값 요약 (`section_analysis_pipeline.ipynb`)
+## 10. 설정값 요약 (`section_analysis.ipynb`)
 
 ```python
 # 현재 적용 중인 분석 설정
-INCLUDE_TITLE_NOUNS = False       # 제목 명사 제외 (본문+댓글만)
 TFIDF_TOP_N = 30                  # TF-IDF 상위 30개 키워드
-KMEANS_N_CLUSTERS = 3             # 전체 학습 기준 k=3 (엘보우 분석 결과)
-LDA_N_TOPICS = 5                  # 전체 학습 기준 토픽 수
-LDA_TOP_WORDS = 15                # 토픽당 키워드 수
+KMEANS_N_CLUSTERS = 3             # elbow + silhouette + 해석 가능성 기준
+LDA_N_TOPICS = 5                  # perplexity + UMass-style coherence + 해석 가능성 기준
+TOP_N_WORDS = 15                  # 군집·토픽당 키워드 수
+NMF_N_TOPICS = 5                  # LDA와 비교 가능한 보완 성분 수
 
 # 학습 후 구간별 분포 집계
 # → 각 문서의 cluster_id / dominant_topic + section 컬럼으로 groupby
@@ -373,17 +445,17 @@ LDA_TOP_WORDS = 15                # 토픽당 키워드 수
 
 ---
 
-## 10. 예상 최종 결과물
+## 11. 예상 최종 결과물
 
 
 | 분석      | 출력물                                                                                                                                                                                                                                                             | 해석 포인트                        |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| TF-IDF  | `tfidf_top_terms_by_section.csv`, `tfidf_heatmap_union_top.png`, `tfidf_heatmap_keyword_section_top20.png`                                                                                                                                                      | 구간별 핵심 키워드 변화                 |
-| K-Means | `kmeans_cluster_top_terms.csv`, `kmeans_doc_assignments.csv`, `kmeans_section_distribution.csv`, `kmeans_elbow.csv`, `kmeans_elbow.png`, `kmeans_section_stacked_and_heatmap.png`, `kmeans_section_ratio_lines.png`, `kmeans_cluster_section_heatmap.png`       | 3가지 여론 유형의 시계열 소장 추적          |
-| LDA     | `lda_topic_top_terms.csv`, `lda_topic_keywords.csv`(별칭), `lda_doc_assignments.csv`, `lda_doc_topic_distribution.csv`(별칭), `lda_section_distribution.csv`, `lda_section_stacked_and_heatmap.png`, `lda_section_ratio_lines.png`, `lda_topic_section_heatmap.png` | 5가지 잠재 담론의 부상·소멸 추적           |
-| 워드클라우드  | `wordcloud_by_section.png` + `wordcloud/raw/wordcloud_raw_section_{1~4}.png` + `wordcloud/filtered/wordcloud_filtered_section_{1~4}.png`                                                                                                                        | 시각적 키워드 트렌드                   |
+| TF-IDF  | `tfidf_top_terms_by_section.csv`, `tfidf_heatmap_union_top.png`, `tfidf_heatmap_matrix_by_section.csv` | 구간별 핵심 키워드 변화                 |
+| K-Means | `kmeans_cluster_top_terms.csv`, `kmeans_doc_assignments.csv`, `kmeans_section_distribution.csv`, `kmeans_elbow.csv`, `kmeans_model_selection.csv` | 3가지 여론 유형의 시계열 비중 추적          |
+| LDA     | `lda_topic_top_terms.csv`, `lda_doc_assignments.csv`, `lda_section_distribution.csv`, `lda_model_selection.csv` | 5가지 잠재 담론의 부상·소멸 추적           |
+| NMF     | `nmf_topic_top_terms.csv`, `nmf_doc_assignments.csv`, `nmf_section_distribution.csv` | TF-IDF 기반 보완 담론 성분 확인 |
+| 워드클라우드  | `wordcloud_by_section.png`                                                                                                                                                                                                                                      | 시각적 키워드 트렌드                   |
 | 히트맵     | KMeans·LDA·TF-IDF 보조 히트맵 위 경로 및 Step 4 통합 히트맵                                                                                                                                                                                                                   | 담론 지형 변화 한눈에 파악               |
 | 박스플롯    | `kmeans/boxplot_cluster_topic_like_comment.png`, `kmeans/boxplot_section_like_comment.png`                                                                                                                                                                      | 담론 유형별 여론 반응 특성 비교            |
-| 감성(참고)  | `sentiment/sentiment_lexicon_by_section.csv`, `sentiment_lexicon_by_section.png`                                                                                                                                                                                | 사전 기반 구간 스칼라(정밀 분류는 별도 모델 권장) |
 
 

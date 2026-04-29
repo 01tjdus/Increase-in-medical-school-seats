@@ -9,9 +9,8 @@
 ### 1.1 분석 목적
 
 2024년 2월 의대 2,000명 증원 공식 발표 이후 형성된 온라인 여론의 **시계열 변화**를 추적한다.
-단순 찬반 집계가 아닌, 토픽·군집·감성 분석을 결합하여 **담론 구조의 진화**를 규명한다.
 
-### 1.2 분석 구간
+1.2 분석 구간
 
 
 | 구간  | 기간           | 주요 사건                             |
@@ -25,13 +24,13 @@
 ### 1.3 데이터 현황
 
 
-| 항목           | 값                                           |
-| ------------ | ------------------------------------------- |
-| 분석 문서 수      | 8,972건                                      |
+| 항목           | 값                                                                        |
+| ------------ | ------------------------------------------------------------------------ |
+| 분석 문서 수      | 8,972건                                                                   |
 | 원본 파일        | `combined_section_sorted.csv` 및 통합 분석용 `crolling_total_estate_press.pkl` |
-| 형태소 분석기      | kiwipiepy (명사 추출)                           |
-| 불용어 수        | 221개 (`analysis_stopwords_excluded.txt`)    |
-| 불용어 제거 후 상위어 | 치료·미래·투자·주장·발생·간호사·시스템·아이·현장·최고             |
+| 형태소 분석기      | kiwipiepy (명사 추출)                                                        |
+| 불용어 수        | 221개 (`analysis_stopwords_excluded.txt`)                                 |
+| 불용어 제거 후 상위어 | 치료·미래·투자·주장·발생·간호사·시스템·아이·현장·최고                                          |
 
 
 ---
@@ -340,18 +339,20 @@ plt.ylim(0, doc_df['like'].quantile(0.99))
 
 ## 8. 분석 노트북 실행 순서
 
-메인 분석은 **`notebooks/03_analysis/section_analysis_pipeline.ipynb`** 한 파일에서 순서대로 실행합니다. (과거 Cell 번호 체계는 폐기)
+메인 분석은 `**notebooks/03_analysis/section_analysis_pipeline.ipynb`** 한 파일에서 순서대로 실행합니다. (과거 Cell 번호 체계는 폐기)
 
-| 단계 | 내용 |
-| --- | --- |
-| Step 0 | 통합 PKL 로드·명사 컬럼 검증 |
-| Step 1~2 | 글로벌 불용어·로컬 불용어·`nouns_final` |
-| Step 3 | 로컬 불용어 적용·`nouns_final` 확정 |
-| Step 4 | 빈도, 워드클라우드(2×2 + **구간×필터 8장**), TF-IDF 히트맵(`tfidf_heatmap_union_top.png`) |
-| Step 5 | layered PKL 저장 |
-| Step 6a~6c | KMeans·LDA 전체 학습, 구간 비율 **스택 막대·선·히트맵 PNG**, CSV(계획서 §5.3 LDA 별칭 포함) |
-| Step 7 | 군집·토픽 키워드·라벨, 박스플롯 PNG, TF-IDF 보조 히트맵 PNG |
-| Step 8 | 경량 감성(사전)·구간별 CSV·PNG (`outputs/pipeline/sentiment/`) |
+
+| 단계         | 내용                                                                        |
+| ---------- | ------------------------------------------------------------------------- |
+| Step 0     | 통합 PKL 로드·명사 컬럼 검증                                                        |
+| Step 1~2   | 글로벌 불용어·로컬 불용어·`nouns_final`                                              |
+| Step 3     | 로컬 불용어 적용·`nouns_final` 확정                                                |
+| Step 4     | 빈도, 워드클라우드(2×2 + **구간×필터 8장**), TF-IDF 히트맵(`tfidf_heatmap_union_top.png`) |
+| Step 5     | layered PKL 저장                                                            |
+| Step 6a~6c | KMeans·LDA 전체 학습, 구간 비율 **스택 막대·선·히트맵 PNG**, CSV(계획서 §5.3 LDA 별칭 포함)      |
+| Step 7     | 군집·토픽 키워드·라벨, 박스플롯 PNG, TF-IDF 보조 히트맵 PNG                                 |
+| Step 8     | 경량 감성(사전)·구간별 CSV·PNG (`outputs/pipeline/sentiment/`)                     |
+
 
 ---
 
@@ -375,14 +376,14 @@ LDA_TOP_WORDS = 15                # 토픽당 키워드 수
 ## 10. 예상 최종 결과물
 
 
-| 분석        | 출력물                              | 해석 포인트               |
-| --------- | -------------------------------- | -------------------- |
-| TF-IDF    | `tfidf_top_terms_by_section.csv`, `tfidf_heatmap_union_top.png`, `tfidf_heatmap_keyword_section_top20.png` | 구간별 핵심 키워드 변화        |
-| K-Means   | `kmeans_cluster_top_terms.csv`, `kmeans_doc_assignments.csv`, `kmeans_section_distribution.csv`, `kmeans_elbow.csv`, `kmeans_elbow.png`, `kmeans_section_stacked_and_heatmap.png`, `kmeans_section_ratio_lines.png`, `kmeans_cluster_section_heatmap.png` | 3가지 여론 유형의 시계열 소장 추적 |
-| LDA       | `lda_topic_top_terms.csv`, `lda_topic_keywords.csv`(별칭), `lda_doc_assignments.csv`, `lda_doc_topic_distribution.csv`(별칭), `lda_section_distribution.csv`, `lda_section_stacked_and_heatmap.png`, `lda_section_ratio_lines.png`, `lda_topic_section_heatmap.png` | 5가지 잠재 담론의 부상·소멸 추적  |
-| 워드클라우드    | `wordcloud_by_section.png` + `wordcloud/raw/wordcloud_raw_section_{1~4}.png` + `wordcloud/filtered/wordcloud_filtered_section_{1~4}.png` | 시각적 키워드 트렌드          |
-| 히트맵       | KMeans·LDA·TF-IDF 보조 히트맵 위 경로 및 Step 4 통합 히트맵 | 담론 지형 변화 한눈에 파악      |
-| 박스플롯      | `kmeans/boxplot_cluster_topic_like_comment.png`, `kmeans/boxplot_section_like_comment.png` | 담론 유형별 여론 반응 특성 비교   |
-| 감성(참고)   | `sentiment/sentiment_lexicon_by_section.csv`, `sentiment_lexicon_by_section.png` | 사전 기반 구간 스칼라(정밀 분류는 별도 모델 권장) |
+| 분석      | 출력물                                                                                                                                                                                                                                                             | 해석 포인트                        |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| TF-IDF  | `tfidf_top_terms_by_section.csv`, `tfidf_heatmap_union_top.png`, `tfidf_heatmap_keyword_section_top20.png`                                                                                                                                                      | 구간별 핵심 키워드 변화                 |
+| K-Means | `kmeans_cluster_top_terms.csv`, `kmeans_doc_assignments.csv`, `kmeans_section_distribution.csv`, `kmeans_elbow.csv`, `kmeans_elbow.png`, `kmeans_section_stacked_and_heatmap.png`, `kmeans_section_ratio_lines.png`, `kmeans_cluster_section_heatmap.png`       | 3가지 여론 유형의 시계열 소장 추적          |
+| LDA     | `lda_topic_top_terms.csv`, `lda_topic_keywords.csv`(별칭), `lda_doc_assignments.csv`, `lda_doc_topic_distribution.csv`(별칭), `lda_section_distribution.csv`, `lda_section_stacked_and_heatmap.png`, `lda_section_ratio_lines.png`, `lda_topic_section_heatmap.png` | 5가지 잠재 담론의 부상·소멸 추적           |
+| 워드클라우드  | `wordcloud_by_section.png` + `wordcloud/raw/wordcloud_raw_section_{1~4}.png` + `wordcloud/filtered/wordcloud_filtered_section_{1~4}.png`                                                                                                                        | 시각적 키워드 트렌드                   |
+| 히트맵     | KMeans·LDA·TF-IDF 보조 히트맵 위 경로 및 Step 4 통합 히트맵                                                                                                                                                                                                                   | 담론 지형 변화 한눈에 파악               |
+| 박스플롯    | `kmeans/boxplot_cluster_topic_like_comment.png`, `kmeans/boxplot_section_like_comment.png`                                                                                                                                                                      | 담론 유형별 여론 반응 특성 비교            |
+| 감성(참고)  | `sentiment/sentiment_lexicon_by_section.csv`, `sentiment_lexicon_by_section.png`                                                                                                                                                                                | 사전 기반 구간 스칼라(정밀 분류는 별도 모델 권장) |
 
 

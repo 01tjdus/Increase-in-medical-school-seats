@@ -1,4 +1,4 @@
-# 섹션 2 전용 불용어 (한 줄에 하나).
+# 섹션 2 전용 불용어
 # 고착어 후보: outputs/analysis/tfidf/sticky_keyword_candidates_section2.csv
 
 # --- sticky_score>=50 자동 추가 (notebooks/lib/append_sticky_local_stopwords.py) ---

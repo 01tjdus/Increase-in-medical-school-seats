@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로젝트 파일 구조 — 의대 증원 여론 분석</title>
+    <style>
+      :root {
+        --primary: #1a3a5c;
+        --accent: #2e7dd1;
+        --bg: #f7f9fc;
+        --card: #ffffff;
+        --border: #dde3ec;
+        --text: #1c2333;
+        --muted: #6b7a99;
+
+        --c-nb:   #7c3aed; /* notebook */
+        --c-py:   #0ea5e9; /* python script */
+        --c-csv:  #16a34a; /* csv / data */
+        --c-pkl:  #b45309; /* pkl */
+        --c-png:  #db2777; /* image */
+        --c-md:   #475569; /* markdown */
+        --c-txt:  #64748b; /* text */
+        --c-font: #94a3b8; /* font */
+        --c-misc: #94a3b8; /* other */
+
+        --step0: #e74c3c;
+        --step1: #e67e22;
+        --step2: #27ae60;
+        --step3: #2e7dd1;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+      /* ── HERO ── */
+      .hero {
+        background: linear-gradient(135deg, #1a3a5c 0%, #1e5fa8 100%);
+        color: #fff;
+        padding: 48px 40px 36px;
+        border-radius: 0 0 20px 20px;
+        margin-bottom: 40px;
+      }
+      .hero-badge {
+        display: inline-block;
+        background: rgba(255,255,255,.18);
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 20px;
+        font-size: 11px;
+        padding: 3px 12px;
+        margin-bottom: 14px;
+        letter-spacing: .5px;
+      }
+      .hero h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 6px; }
+      .hero .sub { font-size: .95rem; opacity: .8; margin-bottom: 20px; }
+      .hero-stats {
+        display: flex; gap: 24px; flex-wrap: wrap;
+        margin-top: 24px; padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,.2);
+      }
+      .hero-stat .val { font-size: 1.5rem; font-weight: 700; }
+      .hero-stat .lbl { font-size: 11px; opacity: .7; margin-top: 2px; }
+
+      /* ── SECTION ── */
+      section { margin-bottom: 48px; }
+      .section-title {
+        font-size: 1.1rem; font-weight: 700; color: var(--primary);
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--accent);
+        margin-bottom: 20px;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .section-num {
+        background: var(--accent); color: #fff;
+        border-radius: 6px; padding: 2px 9px;
+        font-size: .75rem; font-weight: 600;
+      }
+
+      /* ── PIPELINE ── */
+      .pipeline {
+        display: flex; align-items: stretch; gap: 0;
+        overflow-x: auto; padding-bottom: 4px;
+      }
+      .pipe-step {
+        flex: 1; min-width: 160px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 16px;
+        position: relative;
+      }
+      .pipe-step + .pipe-step { margin-left: 28px; }
+      .pipe-step + .pipe-step::before {
+        content: "→";
+        position: absolute; left: -22px; top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem; color: var(--muted);
+      }
+      .pipe-step .step-num {
+        font-size: .7rem; font-weight: 700;
+        letter-spacing: .5px; margin-bottom: 6px;
+        display: inline-block; border-radius: 4px;
+        padding: 2px 7px; color: #fff;
+      }
+      .pipe-step h3 { font-size: .88rem; font-weight: 700; margin-bottom: 4px; }
+      .pipe-step p { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+      .pipe-step .pipe-files { margin-top: 10px; display: flex; flex-direction: column; gap: 3px; }
+      .pipe-file {
+        font-size: .75rem; display: flex; align-items: center; gap: 5px;
+        background: #f4f6fb; border-radius: 4px; padding: 3px 7px;
+        color: var(--text);
+      }
+      .pipe-file .dot {
+        width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+      }
+
+      /* ── FILE TREE ── */
+      .tree-wrap {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 28px;
+        font-family: "Consolas", "D2Coding", "Cascadia Code", monospace;
+        font-size: .82rem;
+        line-height: 1.9;
+        overflow-x: auto;
+      }
+      .tree-root { font-weight: 700; font-size: .9rem; color: var(--primary); margin-bottom: 2px; }
+      .tree-line { white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+      .tree-prefix { color: #b0b8cc; }
+      .tree-dir { font-weight: 600; color: var(--primary); }
+      .tree-file { color: var(--text); }
+      .file-tag {
+        font-size: .68rem; font-weight: 600;
+        border-radius: 3px; padding: 1px 5px;
+        margin-left: 4px; vertical-align: middle;
+      }
+      .tag-nb   { background: #ede9fe; color: var(--c-nb); }
+      .tag-py   { background: #e0f2fe; color: #0369a1; }
+      .tag-csv  { background: #dcfce7; color: #15803d; }
+      .tag-pkl  { background: #fef3c7; color: #92400e; }
+      .tag-png  { background: #fce7f3; color: #be185d; }
+      .tag-md   { background: #f1f5f9; color: #475569; }
+      .tag-txt  { background: #f8fafc; color: #64748b; }
+      .tag-font { background: #f8fafc; color: #94a3b8; }
+      .tag-html { background: #fff7ed; color: #c2410c; }
+      .tag-zip  { background: #f0fdf4; color: #166534; }
+      .file-size { font-size: .72rem; color: #aab0c0; margin-left: 4px; }
+      .file-desc { font-size: .73rem; color: var(--muted); margin-left: 6px; font-family: sans-serif; }
+
+      /* 디렉터리 섹션 색상 */
+      .dir-crawl  .tree-dir { color: var(--step0); }
+      .dir-pre    .tree-dir { color: var(--step1); }
+      .dir-int    .tree-dir { color: var(--step2); }
+      .dir-ana    .tree-dir { color: var(--step3); }
+
+      /* ── LEGEND ── */
+      .legend {
+        display: flex; gap: 10px; flex-wrap: wrap;
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 10px; padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+      .legend-item { display: flex; align-items: center; gap: 5px; font-size: .78rem; }
+
+      /* ── OUTPUTS GRID ── */
+      .outputs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 14px;
+      }
+      .output-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 10px; padding: 14px 16px;
+      }
+      .output-card .oc-dir { font-size: .72rem; color: var(--muted); margin-bottom: 4px; }
+      .output-card .oc-title { font-size: .85rem; font-weight: 600; color: var(--primary); margin-bottom: 6px; }
+      .output-card .oc-files { display: flex; flex-direction: column; gap: 3px; }
+      .output-card .oc-file { font-size: .75rem; display: flex; align-items: center; gap: 5px; color: var(--text); }
+      .output-card .oc-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
+      }
+      .card-title { font-weight: 600; font-size: .95rem; margin-bottom: 10px; color: var(--primary); }
+      table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+      th { background: #eef2f9; color: var(--primary); font-weight: 600; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); }
+      td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+      tr:last-child td { border-bottom: none; }
+      tr:hover td { background: #fafbff; }
+      code { background: #eef2f9; padding: 1px 5px; border-radius: 3px; font-size: .83em; }
+
+      /* 파이프라인 색상 점 */
+      .dot-0 { background: var(--step0); }
+      .dot-1 { background: var(--step1); }
+      .dot-2 { background: var(--step2); }
+      .dot-3 { background: var(--step3); }
+
+      @media (max-width: 700px) {
+        .pipeline { flex-direction: column; }
+        .pipe-step + .pipe-step { margin-left: 0; margin-top: 20px; }
+        .pipe-step + .pipe-step::before { content: "↓"; left: 50%; top: -18px; transform: translateX(-50%); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ── HERO ── -->
+    <div class="hero">
+      <div class="hero-badge">PROJECT FILE STRUCTURE</div>
+      <h1>의대 증원 온라인 여론 분석</h1>
+      <p class="sub">네이버 블로그·카페 | 2024.01 ~ 2025.06 | 4개 구간 담론 추적</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="val">9,080</div><div class="lbl">분석 문서 수</div></div>
+        <div class="hero-stat"><div class="val">4</div><div class="lbl">시간 구간</div></div>
+        <div class="hero-stat"><div class="val">4단계</div><div class="lbl">분석 파이프라인</div></div>
+        <div class="hero-stat"><div class="val">TF-IDF · K-Means · LDA · NMF</div><div class="lbl">적용 기법</div></div>
+      </div>
+    </div>
+
+    <div class="wrapper">
+
+      <!-- ══ 01. 분석 파이프라인 ══ -->
+      <section>
+        <div class="section-title">
+          <span class="section-num">01</span>분석 파이프라인
+        </div>
+        <div class="pipeline">
+          <div class="pipe-step">
+            <span class="step-num" style="background:var(--step0)">STEP 00</span>
+            <h3>크롤링</h3>
+            <p>네이버 블로그·카페에서 "의대 증원" 게시글 수집</p>
+            <div class="pipe-files">
+              <div class="pipe-file"><div class="dot dot-0"></div>blog_crolling.py</div>
+              <div class="pipe-file"><div class="dot dot-0"></div>cafe_crolling.py</div>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="step-num" style="background:var(--step1)">STEP 01</span>
+            <h3>원천별 전처리</h3>
+            <p>컬럼 정규화 → Kiwi 명사 추출 → 불용어 1차 처리</p>
+            <div class="pipe-files">
+              <div class="pipe-file"><div class="dot dot-1"></div>blog_preprocess.ipynb</div>
+              <div class="pipe-file"><div class="dot dot-1"></div>cafe_preprocess.ipynb</div>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="step-num" style="background:var(--step2)">STEP 02</span>
+            <h3>통합·불용어 레이어</h3>
+            <p>블로그+카페 병합 → 공통·구간별 로컬 불용어 → layered PKL</p>
+            <div class="pipe-files">
+              <div class="pipe-file"><div class="dot dot-2"></div>integrated_preprocessing.ipynb</div>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <span class="step-num" style="background:var(--step3)">STEP 03</span>
+            <h3>메인 분석</h3>
+            <p>TF-IDF · WordCloud · K-Means · LDA · NMF · 반응 지표</p>
+            <div class="pipe-files">
+              <div class="pipe-file"><div class="dot dot-3"></div>section_analysis.ipynb</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ 02. 파일 트리 ══ -->
+      <section>
+        <div class="section-title">
+          <span class="section-num">02</span>전체 파일 구조
+        </div>
+
+        <!-- 범례 -->
+        <div class="legend">
+          <span class="legend-item"><span class="file-tag tag-nb">ipynb</span>Jupyter 노트북</span>
+          <span class="legend-item"><span class="file-tag tag-py">py</span>Python 스크립트</span>
+          <span class="legend-item"><span class="file-tag tag-csv">csv</span>데이터 테이블</span>
+          <span class="legend-item"><span class="file-tag tag-pkl">pkl</span>직렬화 데이터</span>
+          <span class="legend-item"><span class="file-tag tag-png">png</span>시각화 이미지</span>
+          <span class="legend-item"><span class="file-tag tag-md">md</span>문서</span>
+          <span class="legend-item"><span class="file-tag tag-html">html</span>보고서</span>
+          <span class="legend-item"><span class="file-tag tag-txt">txt</span>불용어 목록</span>
+        </div>
+
+        <div class="tree-wrap">
+          <div class="tree-root">📁 Increase-in-medical-school-seats/</div>
+
+          <!-- 루트 파일 -->
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">project_report.html<span class="file-tag tag-html">html</span></span><span class="file-desc">분석 결과 종합 보고서</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">project_structure.html<span class="file-tag tag-html">html</span></span><span class="file-desc">파일 구조 안내 (현재 파일)</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">project_paths.py<span class="file-tag tag-py">py</span></span><span class="file-desc">모든 경로 상수 (노트북·스크립트 공통)</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">ANALYSIS_PLAN.md<span class="file-tag tag-md">md</span></span><span class="file-desc">분석 설계·방법론</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">PPT_OUTLINE.md<span class="file-tag tag-md">md</span></span><span class="file-desc">발표 구성안</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">PROJECT_STRUCTURE.md<span class="file-tag tag-md">md</span></span><span class="file-desc">구조 요약 문서</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">README.md<span class="file-tag tag-md">md</span></span><span class="file-desc">한 줄 소개 + 실행 개요</span></div>
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-file">requirements.txt<span class="file-tag tag-txt">txt</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│</span></div>
+
+          <!-- notebooks/ -->
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-dir">📁 notebooks/</span></div>
+          <!-- lib -->
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 lib/</span><span class="file-desc">노트북 공통 유틸리티</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">notebook_bootstrap.py<span class="file-tag tag-py">py</span></span><span class="file-desc">루트 경로 자동 탐지</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">stopword_utils.py<span class="file-tag tag-py">py</span></span><span class="file-desc">불용어 로드·적용 헬퍼</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">append_sticky_local_stopwords.py<span class="file-tag tag-py">py</span></span><span class="file-desc">고착어 → 로컬 불용어 추가</span></div>
+          <!-- 00_crolling -->
+          <div class="tree-line dir-crawl"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 00_crolling/</span><span class="file-desc" style="color:var(--step0)">STEP 00 — 크롤링</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">blog_crolling.py<span class="file-tag tag-py">py</span></span><span class="file-desc">Selenium 블로그 크롤 → data/blog_only/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">cafe_crolling.py<span class="file-tag tag-py">py</span></span><span class="file-desc">Playwright 카페 크롤 → data/cafe_only/</span></div>
+          <!-- 01_preprocess -->
+          <div class="tree-line dir-pre"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 01_preprocess/</span><span class="file-desc" style="color:var(--step1)">STEP 01 — 원천별 전처리</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">blog_column_normalize.py<span class="file-tag tag-py">py</span></span><span class="file-desc">블로그 CSV 컬럼 정규화</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">blog_preprocess.ipynb<span class="file-tag tag-nb">ipynb</span></span><span class="file-desc">블로그 전처리 → Kiwi 명사 → PKL</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">cafe_preprocess.ipynb<span class="file-tag tag-nb">ipynb</span></span><span class="file-desc">카페 전처리 → Kiwi 명사 → PKL</span></div>
+          <!-- 02_integrated -->
+          <div class="tree-line dir-int"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 02_integrated/</span><span class="file-desc" style="color:var(--step2)">STEP 02 — 통합·불용어 레이어</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">integrated_preprocessing.ipynb<span class="file-tag tag-nb">ipynb</span></span><span class="file-desc">블로그+카페 병합 → layered PKL 확정</span></div>
+          <!-- 03_analysis -->
+          <div class="tree-line dir-ana"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 03_analysis/</span><span class="file-desc" style="color:var(--step3)">STEP 03 — 메인 분석</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">section_analysis.ipynb<span class="file-tag tag-nb">ipynb</span></span><span class="file-size">1.9 MB</span><span class="file-desc">TF-IDF · WordCloud · K-Means · LDA · NMF · 반응 지표</span></div>
+          <!-- zip -->
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-file">blog_cafe.zip<span class="file-tag tag-zip">zip</span></span><span class="file-size">1.0 MB</span><span class="file-desc">크롤링 결과 백업</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   └──</span><span class="tree-file">preprocess_after_project.zip<span class="file-tag tag-zip">zip</span></span><span class="file-size">3.3 MB</span><span class="file-desc">전처리 산출물 백업</span></div>
+          <div class="tree-line"><span class="tree-prefix">│</span></div>
+
+          <!-- data/ -->
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-dir">📁 data/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 blog_only/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">naver_blog_medical_quota_final_jupyter.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">40.6 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">naver_blog_medical_quota_preprocessed.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">38.6 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">noun_only.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">31.2 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   ├──</span><span class="tree-file">nouns_stw.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">31.2 MB</span><span class="file-desc">불용어 제거 후</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">README.md<span class="file-tag tag-md">md</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 cafe_only/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-file">README.md<span class="file-tag tag-md">md</span></span><span class="file-desc">카페 원본 JSON은 gitignore</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   └──</span><span class="tree-dir">📁 integrated/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-file">combined_section_sorted_flat_comments.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">94.0 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-file">combined_section_sorted_flat_comments.pkl<span class="file-tag tag-pkl">pkl</span></span><span class="file-size">90.8 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-file">stopwords_removed_all.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">271.3 MB</span><span class="file-desc">최종 불용어 제거 통합본</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       └──</span><span class="tree-file">README.md<span class="file-tag tag-md">md</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│</span></div>
+
+          <!-- outputs/ -->
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-dir">📁 outputs/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-dir">📁 pipeline/</span><span class="file-desc">중간 파이프라인 산출물</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │   └──</span><span class="tree-dir">📁 datasets/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │       ├──</span><span class="tree-file">analysis_df_with_tokens.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">216.9 MB</span><span class="file-desc">분석용 토큰 포함 데이터</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   │       └──</span><span class="tree-file">analysis_df_with_tokens.pkl<span class="file-tag tag-pkl">pkl</span></span><span class="file-size">169.8 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   └──</span><span class="tree-dir">📁 analysis/</span><span class="file-desc">최종 분석 결과물</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-dir">📁 tfidf/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">tfidf_top_terms_by_section.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">구간별 상위 키워드</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">tfidf_heatmap_by_section.png<span class="file-tag tag-png">png</span></span><span class="file-size">238 KB</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">sticky_keyword_candidates.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">고착어 후보</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   └──</span><span class="tree-file">unique_keyword_candidates_section*.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">× 4구간</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-dir">📁 wordcloud/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   └──</span><span class="tree-file">wordcloud_by_section.png<span class="file-tag tag-png">png</span></span><span class="file-size">1.1 MB</span><span class="file-desc">4구간 통합 워드클라우드</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-dir">📁 kmeans/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">kmeans_cluster_top_terms.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">군집별 상위 키워드</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">kmeans_section_distribution.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">구간별 군집 비율</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">kmeans_doc_assignments.csv<span class="file-tag tag-csv">csv</span></span><span class="file-size">1.5 MB</span><span class="file-desc">문서별 군집 배정</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">kmeans_elbow.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">엘보우 분석</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   └──</span><span class="tree-file">boxplot_section_like_comment.png<span class="file-tag tag-png">png</span></span><span class="file-size">258 KB</span><span class="file-desc">반응 지표 박스플롯</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       ├──</span><span class="tree-dir">📁 lda/</span><span class="file-desc">(LDA + NMF 결과 공동 저장)</span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">lda_topic_top_terms.csv<span class="file-tag tag-csv">csv</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">lda_section_distribution.csv<span class="file-tag tag-csv">csv</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   ├──</span><span class="tree-file">nmf_topic_top_terms.csv<span class="file-tag tag-csv">csv</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│       │   └──</span><span class="tree-file">nmf_section_distribution.csv<span class="file-tag tag-csv">csv</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│       └──</span><span class="tree-dir">📁 stopwords/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│           └──</span><span class="tree-file">stopwords_auto_by_section.csv<span class="file-tag tag-csv">csv</span></span><span class="file-desc">자동 추출 고착어 목록</span></div>
+          <div class="tree-line"><span class="tree-prefix">│</span></div>
+
+          <!-- stopwords/ -->
+          <div class="tree-line"><span class="tree-prefix">├──</span><span class="tree-dir">📁 stopwords/</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-file">stopwords-ko.txt<span class="file-tag tag-txt">txt</span></span><span class="file-desc">공통 한국어 불용어</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-file">stopwords_common.txt<span class="file-tag tag-txt">txt</span></span><span class="file-desc">프로젝트 공통 불용어</span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-file">stopwords_local_section1.txt<span class="file-tag tag-txt">txt</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-file">stopwords_local_section2.txt<span class="file-tag tag-txt">txt</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│   ├──</span><span class="tree-file">stopwords_local_section3.txt<span class="file-tag tag-txt">txt</span></span></div>
+          <div class="tree-line"><span class="tree-prefix">│   └──</span><span class="tree-file">stopwords_local_section4.txt<span class="file-tag tag-txt">txt</span></span><span class="file-desc">구간별 로컬 불용어</span></div>
+          <div class="tree-line"><span class="tree-prefix">│</span></div>
+
+          <!-- nanum-gothic/ -->
+          <div class="tree-line"><span class="tree-prefix">└──</span><span class="tree-dir">📁 nanum-gothic/</span><span class="file-desc">워드클라우드용 한글 폰트</span></div>
+          <div class="tree-line"><span class="tree-prefix">    ├──</span><span class="tree-file">NanumGothic.ttf<span class="file-tag tag-font">font</span></span><span class="file-size">4.5 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">    ├──</span><span class="tree-file">NanumGothicBold.ttf<span class="file-tag tag-font">font</span></span><span class="file-size">4.4 MB</span></div>
+          <div class="tree-line"><span class="tree-prefix">    └──</span><span class="tree-file">NanumGothicLight.ttf<span class="file-tag tag-font">font</span></span><span class="file-size">1.5 MB</span></div>
+        </div>
+      </section>
+
+      <!-- ══ 03. 노트북 역할 ══ -->
+      <section>
+        <div class="section-title">
+          <span class="section-num">03</span>노트북 · 스크립트 역할
+        </div>
+        <div class="card">
+          <table>
+            <tr>
+              <th>단계</th>
+              <th>파일</th>
+              <th>역할</th>
+              <th>입력</th>
+              <th>출력</th>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step0);font-weight:700">00a</span></td>
+              <td><code>00_crolling/cafe_crolling.py</code></td>
+              <td>네이버 카페 크롤 (Playwright)</td>
+              <td>—</td>
+              <td><code>data/cafe_only/의대증원_카페_v2.json</code></td>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step0);font-weight:700">00b</span></td>
+              <td><code>00_crolling/blog_crolling.py</code></td>
+              <td>네이버 블로그 크롤 (Selenium, 선택)</td>
+              <td>—</td>
+              <td><code>data/blog_only/*.csv</code></td>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step1);font-weight:700">01a</span></td>
+              <td><code>01_preprocess/blog_column_normalize.py</code></td>
+              <td>블로그 CSV 컬럼 정규화 보조</td>
+              <td>블로그 원본 CSV</td>
+              <td>정규화된 CSV</td>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step1);font-weight:700">01b</span></td>
+              <td><code>01_preprocess/blog_preprocess.ipynb</code></td>
+              <td>블로그 전처리 → Kiwi 명사 추출</td>
+              <td><code>blog_only/*.csv</code></td>
+              <td><code>blog_only/*preprocessed.*</code></td>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step1);font-weight:700">01c</span></td>
+              <td><code>01_preprocess/cafe_preprocess.ipynb</code></td>
+              <td>카페 전처리 → Kiwi 명사 추출</td>
+              <td><code>cafe_only/*.json</code></td>
+              <td><code>cafe_only/*.csv</code>, <code>*.pkl</code></td>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step2);font-weight:700">02</span></td>
+              <td><code>02_integrated/integrated_preprocessing.ipynb</code></td>
+              <td>블로그+카페 병합 → 공통·로컬 불용어 레이어 → <strong>layered PKL 확정</strong></td>
+              <td>블로그·카페 PKL</td>
+              <td><code>data/integrated/*</code>, <code>outputs/pipeline/datasets/*</code></td>
+            </tr>
+            <tr>
+              <td><span style="color:var(--step3);font-weight:700">03</span></td>
+              <td><code>03_analysis/section_analysis.ipynb</code></td>
+              <td>TF-IDF · WordCloud · K-Means · LDA · NMF · 반응 지표 — <strong>발표 기준 산출물</strong></td>
+              <td><code>outputs/pipeline/datasets/analysis_df_with_tokens.pkl</code></td>
+              <td><code>outputs/analysis/**</code></td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ 04. 주요 산출물 ══ -->
+      <section>
+        <div class="section-title">
+          <span class="section-num">04</span>주요 분석 산출물
+        </div>
+        <div class="outputs-grid">
+          <div class="output-card">
+            <div class="oc-dir">outputs/analysis/tfidf/</div>
+            <div class="oc-title">TF-IDF 결과</div>
+            <div class="oc-files">
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>tfidf_top_terms_by_section.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>tfidf_section_mean_wide.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-png)"></div>tfidf_heatmap_by_section.png</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>sticky_keyword_candidates.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>unique_keyword_candidates_section*.csv</div>
+            </div>
+          </div>
+          <div class="output-card">
+            <div class="oc-dir">outputs/analysis/wordcloud/</div>
+            <div class="oc-title">워드클라우드</div>
+            <div class="oc-files">
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-png)"></div>wordcloud_by_section.png</div>
+            </div>
+          </div>
+          <div class="output-card">
+            <div class="oc-dir">outputs/analysis/kmeans/</div>
+            <div class="oc-title">K-Means 군집 분석</div>
+            <div class="oc-files">
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>kmeans_cluster_top_terms.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>kmeans_section_distribution.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>kmeans_doc_assignments.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>kmeans_elbow.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-png)"></div>boxplot_section_like_comment.png</div>
+            </div>
+          </div>
+          <div class="output-card">
+            <div class="oc-dir">outputs/analysis/lda/</div>
+            <div class="oc-title">LDA 토픽 모델링</div>
+            <div class="oc-files">
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>lda_topic_top_terms.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>lda_section_distribution.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>lda_doc_assignments.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>lda_model_selection.csv</div>
+            </div>
+          </div>
+          <div class="output-card">
+            <div class="oc-dir">outputs/analysis/lda/</div>
+            <div class="oc-title">NMF 보완 분析</div>
+            <div class="oc-files">
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>nmf_topic_top_terms.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>nmf_section_distribution.csv</div>
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>nmf_doc_assignments.csv</div>
+            </div>
+          </div>
+          <div class="output-card">
+            <div class="oc-dir">outputs/analysis/stopwords/</div>
+            <div class="oc-title">불용어 관리</div>
+            <div class="oc-files">
+              <div class="oc-file"><div class="oc-dot" style="background:var(--c-csv)"></div>stopwords_auto_by_section.csv</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ 05. 실행 순서 ══ -->
+      <section>
+        <div class="section-title">
+          <span class="section-num">05</span>재현 실행 순서
+        </div>
+        <div class="card">
+          <div class="card-title">발표 기준 최소 실행 경로</div>
+          <table>
+            <tr><th>#</th><th>실행</th><th>비고</th></tr>
+            <tr>
+              <td>1</td>
+              <td><code>pip install -r requirements.txt</code></td>
+              <td>패키지 설치</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><code>notebooks/02_integrated/integrated_preprocessing.ipynb</code></td>
+              <td>크롤링 데이터가 이미 있다면 여기서 시작. <code>outputs/pipeline/datasets/analysis_df_with_tokens.pkl</code> 생성</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><code>notebooks/03_analysis/section_analysis.ipynb</code></td>
+              <td><strong>발표 기준 산출물 전체 생성</strong>. <code>outputs/analysis/**</code> 모두 덮어씀</td>
+            </tr>
+          </table>
+          <p style="margin-top:12px;font-size:.8rem;color:var(--muted)">
+            ※ 크롤링(00)·원천별 전처리(01)는 데이터 수집이 필요할 때만 실행. 각 노트북 첫 셀의 <code>notebook_bootstrap.setup_paths()</code>가 프로젝트 루트를 자동 탐지하므로 작업 디렉터리 위치와 무관하게 실행 가능.
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </body>
+</html>
